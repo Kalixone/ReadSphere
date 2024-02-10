@@ -1,25 +1,23 @@
 package mate.academy.springbootintro.repository;
 
 import java.util.List;
+import java.util.Optional;
+
+import lombok.RequiredArgsConstructor;
 import mate.academy.springbootintro.model.Book;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+@RequiredArgsConstructor
 @Repository
 public class BookRepositoryImpl implements BookRepository {
 
     private final SessionFactory sessionFactory;
 
-    @Autowired
-    public BookRepositoryImpl(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-    }
-
     @Override
-    public Book save(Book book) {
+    public Book createBook(Book book) {
         Session session = null;
         Transaction transaction = null;
         try {
@@ -41,9 +39,17 @@ public class BookRepositoryImpl implements BookRepository {
     }
 
     @Override
-    public List<Book> findAll() {
+    public List<Book> getAll() {
         try (Session session = sessionFactory.openSession()) {
             return session.createQuery("FROM Book", Book.class).getResultList();
+        }
+    }
+
+    @Override
+    public Optional<Book> getBookById(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            Book book = session.find(Book.class, id);
+            return book != null ? Optional.of(book) : Optional.empty();
         }
     }
 }
