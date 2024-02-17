@@ -5,6 +5,8 @@ import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import mate.academy.springbootintro.dto.BookDto;
 import mate.academy.springbootintro.dto.CreateBookRequestDto;
+
+import mate.academy.springbootintro.dto.UpdateBookRequestDto;
 import mate.academy.springbootintro.exception.EntityNotFoundException;
 import mate.academy.springbootintro.mapper.BookMapper;
 import mate.academy.springbootintro.model.Book;
@@ -22,22 +24,39 @@ public class BookServiceImpl implements BookService {
     public BookDto createBook(CreateBookRequestDto createBookRequestDto) {
         Book book = bookMapper.toModel(createBookRequestDto);
         book.setIsbn("abc" + new Random().nextInt(1000));
-        Book savedBook = bookRepository.createBook(book);
+        Book savedBook = bookRepository.save(book);
         return bookMapper.toDto(savedBook);
     }
 
     @Override
     public List<BookDto> getAll() {
-        return bookRepository.getAll().stream()
+        return bookRepository.findAll().stream()
                 .map(bookMapper::toDto)
                 .toList();
     }
 
     @Override
     public BookDto getBookById(Long id) {
-        Book book = bookRepository.getBookById(id).orElseThrow(
+        Book book = bookRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Can't find book by id: " + id));
         return bookMapper.toDto(book);
+
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        bookRepository.deleteById(id);
+    }
+
+    @Override
+    public BookDto updateBook(Long id, UpdateBookRequestDto updateBookRequestDto) {
+        Book existingBook = bookRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Can't find book by id: " + id));
+
+        bookMapper.updateModel(updateBookRequestDto, existingBook);
+
+        Book updatedBook = bookRepository.save(existingBook);
+        return bookMapper.toDto(updatedBook);
 
     }
 }
