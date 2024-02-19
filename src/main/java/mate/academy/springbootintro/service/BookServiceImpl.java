@@ -5,12 +5,11 @@ import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import mate.academy.springbootintro.dto.BookDto;
 import mate.academy.springbootintro.dto.CreateBookRequestDto;
-
 import mate.academy.springbootintro.dto.UpdateBookRequestDto;
 import mate.academy.springbootintro.exception.EntityNotFoundException;
 import mate.academy.springbootintro.mapper.BookMapper;
 import mate.academy.springbootintro.model.Book;
-import mate.academy.springbootintro.repository.BookRepository;
+import mate.academy.springbootintro.repository.book.BookRepository;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -40,7 +39,6 @@ public class BookServiceImpl implements BookService {
         Book book = bookRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Can't find book by id: " + id));
         return bookMapper.toDto(book);
-
     }
 
     @Override
@@ -52,11 +50,8 @@ public class BookServiceImpl implements BookService {
     public BookDto updateBook(Long id, UpdateBookRequestDto updateBookRequestDto) {
         Book existingBook = bookRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Can't find book by id: " + id));
-
         bookMapper.updateModel(updateBookRequestDto, existingBook);
-
         Book updatedBook = bookRepository.save(existingBook);
         return bookMapper.toDto(updatedBook);
-
     }
 }
