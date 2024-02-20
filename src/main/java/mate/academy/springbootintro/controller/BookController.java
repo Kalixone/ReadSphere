@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import mate.academy.springbootintro.dto.BookDto;
 import mate.academy.springbootintro.dto.CreateBookRequestDto;
 import mate.academy.springbootintro.dto.UpdateBookRequestDto;
+import mate.academy.springbootintro.repository.book.BookSearchParameters;
 import mate.academy.springbootintro.service.BookService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -49,5 +50,10 @@ public class BookController {
     public BookDto updatedBook(@PathVariable Long id,
                                @RequestBody UpdateBookRequestDto updateBookRequestDto) {
         return bookService.updateBook(id, updateBookRequestDto);
+    }
+
+    @GetMapping("/search")
+    public List<BookDto> search(BookSearchParameters searchParameters) {
+        return bookService.search(searchParameters);
     }
 }

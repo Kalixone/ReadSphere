@@ -10,6 +10,9 @@ import mate.academy.springbootintro.exception.EntityNotFoundException;
 import mate.academy.springbootintro.mapper.BookMapper;
 import mate.academy.springbootintro.model.Book;
 import mate.academy.springbootintro.repository.book.BookRepository;
+import mate.academy.springbootintro.repository.book.BookSearchParameters;
+import mate.academy.springbootintro.repository.book.BookSpecificationBuilder;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -18,6 +21,7 @@ public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
+    private final BookSpecificationBuilder bookSpecificationBuilder;
 
     @Override
     public BookDto createBook(CreateBookRequestDto createBookRequestDto) {
@@ -53,5 +57,13 @@ public class BookServiceImpl implements BookService {
         bookMapper.updateModel(updateBookRequestDto, existingBook);
         Book updatedBook = bookRepository.save(existingBook);
         return bookMapper.toDto(updatedBook);
+    }
+
+    @Override
+    public List<BookDto> search(BookSearchParameters params) {
+        Specification<Book> bookSpecification = bookSpecificationBuilder.build(params);
+        return bookRepository.findAll(bookSpecification).stream()
+                .map(bookMapper::toDto)
+                .toList();
     }
 }
