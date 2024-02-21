@@ -12,7 +12,6 @@ import mate.academy.springbootintro.model.Book;
 import mate.academy.springbootintro.repository.book.BookRepository;
 import mate.academy.springbootintro.repository.book.BookSearchParameters;
 import mate.academy.springbootintro.repository.book.BookSpecificationBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -23,16 +22,7 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
     private final BookSpecificationBuilder bookSpecificationBuilder;
-    private final Random random;
-
-    @Autowired
-    public BookServiceImpl(BookRepository bookRepository, BookMapper bookMapper,
-                           BookSpecificationBuilder bookSpecificationBuilder) {
-        this.bookRepository = bookRepository;
-        this.bookMapper = bookMapper;
-        this.bookSpecificationBuilder = bookSpecificationBuilder;
-        this.random = new Random();
-    }
+    private static final Random random = new Random();
 
     @Override
     public BookDto createBook(CreateBookRequestDto createBookRequestDto) {
