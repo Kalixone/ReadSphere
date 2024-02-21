@@ -12,12 +12,12 @@ import java.util.List;
 @Component
 public class BookSpecificationProviderManager implements SpecificationProviderManager<Book> {
 
-    private final List<SpecificationProvider<Book>> phoneSpecificationProvider;
+    private final List<SpecificationProvider<Book>> bookSpecificationProvider;
 
     @Override
     public SpecificationProvider<Book> getSpecificationProvider(String key) {
-        return phoneSpecificationProvider.stream()
-                .filter(b -> b.getKey().equals(key))
+        return bookSpecificationProvider.stream()
+                .filter(b -> b.getKey().equalsIgnoreCase(key))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException
                         ("Can't find correct specification provider for key: " + key));
