@@ -1,6 +1,7 @@
 package mate.academy.springbootintro.controller;
 
 import java.util.List;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mate.academy.springbootintro.dto.BookDto;
 import mate.academy.springbootintro.dto.CreateBookRequestDto;
@@ -31,7 +32,7 @@ public class BookController {
     }
 
     @PostMapping
-    public BookDto createBook(@RequestBody CreateBookRequestDto createBookRequestDto) {
+    public BookDto createBook(@RequestBody @Valid CreateBookRequestDto createBookRequestDto) {
         return bookService.createBook(createBookRequestDto);
     }
 
@@ -48,7 +49,7 @@ public class BookController {
 
     @PutMapping("/{id}")
     public BookDto updatedBook(@PathVariable Long id,
-                               @RequestBody UpdateBookRequestDto updateBookRequestDto) {
+                               @RequestBody @Valid UpdateBookRequestDto updateBookRequestDto) {
         return bookService.updateBook(id, updateBookRequestDto);
     }
 
