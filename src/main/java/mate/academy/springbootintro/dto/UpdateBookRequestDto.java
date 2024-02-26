@@ -3,9 +3,10 @@ package mate.academy.springbootintro.dto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import mate.academy.springbootintro.validation.CoverImage;
+
 import java.math.BigDecimal;
 
-public record CreateBookRequestDto(
+public record UpdateBookRequestDto(
         @NotNull
         String title,
         @NotNull
