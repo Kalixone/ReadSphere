@@ -1,5 +1,6 @@
 package mate.academy.springbootintro.service;
 
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +34,8 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<BookDto> getAll() {
-        return bookRepository.findAll().stream()
+    public List<BookDto> getAll(Pageable pageable) {
+        return bookRepository.findAll(pageable).stream()
                 .map(bookMapper::toDto)
                 .toList();
     }
