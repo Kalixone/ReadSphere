@@ -12,6 +12,7 @@ import mate.academy.springbootintro.repository.book.BookSearchParameters;
 import mate.academy.springbootintro.service.BookService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -31,18 +32,21 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping
+    @Secured("ROLE_USER")
     @Operation(summary = "Get all books", description = "Get a list of all available books")
     public List<BookDto> getAll(Pageable pageable) {
         return bookService.getAll(pageable);
     }
 
     @PostMapping
+    @Secured("ROLE_ADMIN")
     @Operation(summary = "Create a new book", description = "Create a new book")
     public BookDto createBook(@RequestBody @Valid CreateBookRequestDto createBookRequestDto) {
         return bookService.createBook(createBookRequestDto);
     }
 
     @GetMapping("/{id}")
+    @Secured("ROLE_USER")
     @Operation(summary = "Get book by ID", description = "Get book by ID")
     public BookDto getBookById(@PathVariable Long id) {
         return bookService.getBookById(id);
@@ -50,12 +54,14 @@ public class BookController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
+    @Secured("ROLE_ADMIN")
     @Operation(summary = "Delete book by ID", description = "Delete book by ID")
     public void delete(@PathVariable Long id) {
         bookService.deleteById(id);
     }
 
     @PutMapping("/{id}")
+    @Secured("ROLE_ADMIN")
     @Operation(summary = "Update book by ID", description = "Update book by ID")
     public BookDto updatedBook(@PathVariable Long id,
                                @RequestBody @Valid UpdateBookRequestDto updateBookRequestDto) {
