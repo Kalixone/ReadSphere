@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: assignUserRoleToUsers
+      author: kalixone
+      changes:
+        - sql:
+            splitStatements: true
+            endDelimiter: ';'
+            sql: |
+              INSERT INTO user_roles (user_id, role_id) 
+              SELECT id, 2 FROM users;
