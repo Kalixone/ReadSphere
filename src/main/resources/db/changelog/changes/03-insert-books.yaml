@@ -1,0 +1,92 @@
+databaseChangeLog:
+  - changeSet:
+      id: 03-insert-sample-books
+      author: kalixone
+      changes:
+        - insert:
+            tableName: books
+            columns:
+              - column:
+                  name: title
+                  value: "Random Book 1"
+              - column:
+                  name: author
+                  value: "Random Author 1"
+              - column:
+                  name: isbn
+                  value: "ISBN-111-111"
+              - column:
+                  name: price
+                  value: 19.99
+              - column:
+                  name: coverImage
+                  value: "random_cover1.jpg"
+              - column:
+                  name: description
+                  value: "Description for Random Book 1"
+
+        - insert:
+            tableName: books
+            columns:
+              - column:
+                  name: title
+                  value: "Random Book 2"
+              - column:
+                  name: author
+                  value: "Random Author 2"
+              - column:
+                  name: isbn
+                  value: "ISBN-222-222"
+              - column:
+                  name: price
+                  value: 29.99
+              - column:
+                  name: coverImage
+                  value: "random_cover2.jpg"
+              - column:
+                  name: description
+                  value: "Description for Random Book 2"
+
+        - insert:
+            tableName: books
+            columns:
+              - column:
+                  name: title
+                  value: "Random Book 3"
+              - column:
+                  name: author
+                  value: "Random Author 3"
+              - column:
+                  name: isbn
+                  value: "ISBN-333-333"
+              - column:
+                  name: price
+                  value: 39.99
+              - column:
+                  name: coverImage
+                  value: "random_cover3.jpg"
+              - column:
+                  name: description
+                  value: "Description for Random Book 3"
+
+        - insert:
+            tableName: books
+            columns:
+              - column:
+                  name: title
+                  value: "Random Book 4"
+              - column:
+                  name: author
+                  value: "Random Author 4"
+              - column:
+                  name: isbn
+                  value: "ISBN-444-444"
+              - column:
+                  name: price
+                  value: 49.99
+              - column:
+                  name: coverImage
+                  value: "random_cover4.jpg"
+              - column:
+                  name: description
+                  value: "Description for Random Book 4"
