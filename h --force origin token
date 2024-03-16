@@ -1,0 +1,77 @@
+[33mcommit 85954304d1d21401fbac5009450bfad52ce2be33[m[33m ([m[1;36mHEAD -> [m[1;32mtoken[m[33m, [m[1;31morigin/securityhw[m[33m, [m[1;32msecurityhw[m[33m)[m
+Author: Piotr Kaliszuk <p_kaliszuk@tlen.pl>
+Date:   Tue Mar 12 00:28:26 2024 +0100
+
+    security
+
+[33mcommit 19937726b69f4052fbc35196a863bd766851119e[m[33m ([m[1;31morigin/newSecurityHW[m[33m, [m[1;31morigin/main[m[33m, [m[1;32mtokens[m[33m, [m[1;32mnewSecurityHW[m[33m, [m[1;32mmain[m[33m, [m[1;32mexercises[m[33m)[m
+Author: Piotr Kaliszuk <p_kaliszuk@tlen.pl>
+Date:   Sat Mar 2 12:36:23 2024 +0100
+
+    new entity user and other stuff
+
+[33mcommit a57f1b7db9854328d52fe956a553e08b5270e614[m[33m ([m[1;31morigin/sixth_homework[m[33m, [m[1;32msixth_homework[m[33m)[m
+Author: Piotr Kaliszuk <p_kaliszuk@tlen.pl>
+Date:   Tue Feb 27 21:37:34 2024 +0100
+
+    sixth_homework
+
+[33mcommit 62eea161e2040fbb92bf36ea3c9fc43f66b9f591[m
+Author: Piotr Kaliszuk <p_kaliszuk@tlen.pl>
+Date:   Sat Feb 24 12:47:26 2024 +0100
+
+    fifth_homework
+
+[33mcommit 7fa6d3927423c1dff3110cf814fae18287d64657[m[33m ([m[1;31morigin/Fourth_homework[m[33m, [m[1;32mFourth_homework[m[33m)[m
+Author: Piotr Kaliszuk <p_kaliszuk@tlen.pl>
+Date:   Wed Feb 21 22:42:21 2024 +0100
+
+    fixes
+
+[33mcommit 6d9949f3d14ad20167f7bdadc19791b5e3fc3daf[m
+Author: Piotr Kaliszuk <p_kaliszuk@tlen.pl>
+Date:   Wed Feb 21 17:16:16 2024 +0100
+
+    code after fixes
+
+[33mcommit c2da523767555338fb8957ccf44c047802a35a0b[m[33m ([m[1;32m5-th_homework[m[33m)[m
+Author: Piotr Kaliszuk <p_kaliszuk@tlen.pl>
+Date:   Tue Feb 20 15:29:51 2024 +0100
+
+    fourth homework
+
+[33mcommit cb0f710bf4e22519c7252e791f4f8fabff9f68fd[m[33m ([m[1;31morigin/develop[m[33m, [m[1;32mdevelop[m[33m)[m
+Author: Piotr Kaliszuk <p_kaliszuk@tlen.pl>
+Date:   Tue Feb 20 14:56:13 2024 +0100
+
+    fixed checkstyle plugin behavior, added changes to checkstyle
+
+[33mcommit 5f3f14c0a4b1e66561a3a1b7d6b79236613f874b[m
+Author: Piotr Kaliszuk <p_kaliszuk@tlen.pl>
+Date:   Mon Feb 19 17:01:16 2024 +0100
+
+    fixes
+
+[33mcommit 6e9e03310ef72d4711e37f22621f0ddbf92afae5[m[33m ([m[1;32mnewSecurityHW_v3[m[33m)[m
+Author: Piotr Kaliszuk <p_kaliszuk@tlen.pl>
+Date:   Sat Feb 17 15:07:08 2024 +0100
+
+    Third Homework
+
+[33mcommit 8da352233dc7871453a28b9c6b59561fe9f91c91[m
+Author: Piotr Kaliszuk <p_kaliszuk@tlen.pl>
+Date:   Sat Feb 10 13:30:33 2024 +0100
+
+    Second Homework
+
+[33mcommit fc446f588197cb3c12bda50f5fa58369bf3acc78[m
+Author: Piotr Kaliszuk <p_kaliszuk@tlen.pl>
+Date:   Mon Feb 5 20:29:09 2024 +0100
+
+    First homework
+
+[33mcommit 77e94a665bb4fc57468f6b50bb3a3b9ee77a2f82[m[33m ([m[1;32mmaster[m[33m)[m
+Author: Piotr Kaliszuk <p_kaliszuk@tlen.pl>
+Date:   Mon Feb 5 20:08:42 2024 +0100
+
+    Initial commit
