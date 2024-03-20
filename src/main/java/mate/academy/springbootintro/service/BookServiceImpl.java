@@ -1,5 +1,6 @@
 package mate.academy.springbootintro.service;
 
+import mate.academy.springbootintro.dto.BookDtoWithoutCategoryIds;
 import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Random;
@@ -66,6 +67,14 @@ public class BookServiceImpl implements BookService {
         Specification<Book> bookSpecification = bookSpecificationBuilder.build(params);
         return bookRepository.findAll(bookSpecification).stream()
                 .map(bookMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public List<BookDtoWithoutCategoryIds> findBooksByCategoryId(Long id) {
+        List<Book> books = bookRepository.findAllByCategoryId(id);
+        return books.stream()
+                .map(bookMapper::toDtoWithoutCategories)
                 .toList();
     }
 }

@@ -1,0 +1,30 @@
+databaseChangeLog:
+  - changeSet:
+      id: 06-insert-sample-categories
+      author: kalixone
+      changes:
+        - insert:
+            tableName: Categories
+            columns:
+              - column:
+                  name: id
+                  value: 1
+              - column:
+                  name: name
+                  value: "fantasy"
+              - column:
+                  name: description
+                  value: "magic"
+
+        - insert:
+            tableName: Categories
+            columns:
+              - column:
+                  name: id
+                  value: 2
+              - column:
+                  name: name
+                  value: "action"
+              - column:
+                  name: description
+                  value: "pif-paf"

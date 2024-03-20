@@ -1,5 +1,6 @@
 package mate.academy.springbootintro.service;
 
+import mate.academy.springbootintro.dto.BookDtoWithoutCategoryIds;
 import org.springframework.data.domain.Pageable;
 import java.util.List;
 import mate.academy.springbootintro.dto.BookDto;
@@ -19,5 +20,8 @@ public interface BookService {
     BookDto updateBook(Long id, UpdateBookRequestDto updateBookRequestDto);
 
     List<BookDto> search(BookSearchParameters params);
+
+    List<BookDtoWithoutCategoryIds> findBooksByCategoryId(Long id);
 }
+
 

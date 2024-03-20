@@ -32,6 +32,7 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Get all books", description = "Get a list of all available books")
     public List<BookDto> getAll(Pageable pageable) {
         return bookService.getAll(pageable);
@@ -45,7 +46,7 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('USER') || hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Get book by ID", description = "Get book by ID")
     public BookDto getBookById(@PathVariable Long id) {
         return bookService.getBookById(id);
