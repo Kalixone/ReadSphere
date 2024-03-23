@@ -10,7 +10,6 @@ import java.util.List;
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long>, JpaSpecificationExecutor<Book> {
 
-    @Query("SELECT b FROM Book b LEFT JOIN FETCH b.categories c"
-            + "WHERE :categoryId IN (SELECT category.id FROM b.categories category)")
+    @Query("SELECT b FROM Book b JOIN FETCH b.categories c WHERE c.id = :categoryId")
     List<Book> findAllByCategoryId(Long categoryId);
 }

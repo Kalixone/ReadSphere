@@ -39,8 +39,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto update(Long id, CategoryDto categoryDto) {
-        Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
+        Category existingCategory = getCategoryById(id);
         existingCategory.setName(categoryDto.name());
         existingCategory.setDescription(categoryDto.description());
         existingCategory = categoryRepository.save(existingCategory);
@@ -50,5 +49,10 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void deleteById(Long id) {
         categoryRepository.deleteById(id);
+    }
+
+    private Category getCategoryById(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Can't find category by id: " + id));
     }
 }
