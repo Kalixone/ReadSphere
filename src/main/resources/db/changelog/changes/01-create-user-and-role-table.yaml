@@ -157,5 +157,3 @@ databaseChangeLog:
               - column:
                   name: shipping_address
                   value: 'Regular Address'
-
-

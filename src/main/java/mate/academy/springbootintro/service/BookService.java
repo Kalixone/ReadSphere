@@ -23,5 +23,3 @@ public interface BookService {
 
     List<BookDtoWithoutCategoryIds> findBooksByCategoryId(Long id);
 }
-
-
