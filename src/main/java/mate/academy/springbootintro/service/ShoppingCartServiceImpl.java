@@ -1,6 +1,5 @@
 package mate.academy.springbootintro.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mate.academy.springbootintro.dto.AddBookToCartRequest;
 import mate.academy.springbootintro.dto.ShoppingCartDto;
@@ -15,6 +14,7 @@ import mate.academy.springbootintro.repository.cartitem.CartItemRepository;
 import mate.academy.springbootintro.repository.shoppingcart.ShoppingCartRepository;
 import mate.academy.springbootintro.repository.user.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +55,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ShoppingCartDto getShoppingCartByUserId(Long id) {
         return cartMapper.toDto(getShoppingCart(id));
     }
