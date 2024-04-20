@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import java.util.Set;
 
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
@@ -15,8 +14,8 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
             + "WHERE item.id = :id")
     void updateCartItemQuantityById(int quantity, Long id);
 
-    @Query("SELECT item FROM CartItem item "
-            + "LEFT JOIN FETCH item.book "
-            + "WHERE item.shoppingCart.id = :shoppingCartId")
-    Set<CartItem> findByShoppingCartId(Long shoppingCartId);
+    @Modifying
+    @Query("UPDATE CartItem item SET item.isDeleted" +
+            " = true WHERE item.shoppingCart.id = :shoppingCartId")
+    void deleteCartItemsByShoppingCartId(Long shoppingCartId);
 }
