@@ -3,13 +3,12 @@ package mate.academy.springbootintro.model;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import lombok.Data;
@@ -21,7 +20,6 @@ import lombok.ToString;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
-@Data
 @SQLDelete(sql = "UPDATE books SET is_deleted = true WHERE id=?")
 @Where(clause = "is_deleted=false")
 @Entity
@@ -44,7 +42,6 @@ public class Book {
     private String coverImage;
     private String description;
     @Column(name = "categories")
-    @ManyToMany()
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "books_categories",
@@ -54,4 +51,11 @@ public class Book {
     private Set<Category> categories = new HashSet<>();
     @Column(nullable = false)
     private boolean isDeleted = false;
+
+    public Book(Long id) {
+        this.id = id;
+    }
+
+    public Book() {
+    }
 }
