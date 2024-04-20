@@ -13,6 +13,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import lombok.Data;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
@@ -21,6 +25,8 @@ import org.hibernate.annotations.Where;
 @SQLDelete(sql = "UPDATE books SET is_deleted = true WHERE id=?")
 @Where(clause = "is_deleted=false")
 @Entity
+@Getter
+@Setter
 @Table(name = "books")
 public class Book {
     @Id
@@ -39,6 +45,7 @@ public class Book {
     private String description;
     @Column(name = "categories")
     @ManyToMany()
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "books_categories",
             joinColumns = @JoinColumn(name = "book_id"),
