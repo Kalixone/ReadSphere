@@ -23,12 +23,12 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: status
-                  type: tinyint
+                  type: varchar(20)
                   constraints:
                     nullable: false
               - column:
                   name: total
-                  type: decimal
+                  type: decimal(7,2)
                   constraints:
                     nullable: false
               - column:

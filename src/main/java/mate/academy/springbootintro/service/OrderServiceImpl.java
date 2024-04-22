@@ -39,12 +39,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderDto placeOrder(Long userId, OrderRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(()
-                        -> new EntityNotFoundException("User not found with id: " + userId));
+        User user = userRepository.getReferenceById(userId);
         ShoppingCart cart = shoppingCartRepository.findShoppingCartByUserId(userId)
-                .orElseThrow(()
-                        -> new EntityNotFoundException
+                .orElseThrow(() -> new EntityNotFoundException
                         ("Shopping cart not found for user with id: " + userId));
         Order order = convertCartToOrder(cart, request.shippingAddress());
         Order savedOrder = orderRepostiory.save(order);
@@ -54,8 +51,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderDto> getUserOrderHistory(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+        User user = userRepository.getReferenceById(userId);
         List<Order> orders = orderRepostiory.findByUser(user);
         return orders.stream()
                 .map(orderMapper::toDto)
@@ -64,18 +60,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto updateOrder(Long userId, Long orderId, UpdateOrderStatusRequest request) {
-        Order order = orderRepostiory.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException
-                        ("Order not found with id: " + orderId));
+        Order order = orderRepostiory.getReferenceById(orderId);
         order.setStatus(request.status());
         return orderMapper.toDto(orderRepostiory.save(order));
     }
 
     @Override
     public List<OrderItemDto> getOrderItems(Long userId, Long orderId) {
-        Order order = orderRepostiory.findById(orderId).orElseThrow(()
-                -> new EntityNotFoundException("Order not found with id: " + orderId));
-
+        Order order = orderRepostiory.getReferenceById(orderId);
         return order.getOrderItems().stream()
                 .map(orderItemMapper::toDto)
                 .collect(Collectors.toList());
@@ -83,8 +75,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderItemDto getSpecificOrderItem(Long userId, Long orderId, Long orderItemId) {
-        Order order = orderRepostiory.findById(orderId).orElseThrow(()
-                -> new EntityNotFoundException("Order not found with id: " + orderId));
+        Order order = orderRepostiory.getReferenceById(orderId);
         Set<OrderItem> orderItems = order.getOrderItems();
         OrderItem orderItem = orderItems.stream()
                 .filter(item -> item.getId().equals(orderItemId))
