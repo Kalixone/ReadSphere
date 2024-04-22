@@ -10,7 +10,7 @@ import mate.academy.springbootintro.model.User;
 import mate.academy.springbootintro.service.ShoppingCartService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,8 +32,9 @@ public class ShoppingCartController {
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Add Item to Cart",
             description = "Add a new item to the user's shopping cart.")
-    public ShoppingCartDto addToCart(@RequestBody AddBookToCartRequest request) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ShoppingCartDto addToCart(Authentication authentication,
+            @RequestBody AddBookToCartRequest request) {
+        User user = (User) authentication.getPrincipal();
         return shoppingCartService.addToCart(user.getId(), request);
     }
 
@@ -42,8 +43,9 @@ public class ShoppingCartController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Remove Item from Cart",
             description = "Remove an item from the user's shopping cart.")
-    public ShoppingCartDto removeCartItem(@PathVariable Long cartItemId) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ShoppingCartDto removeCartItem(Authentication authentication,
+            @PathVariable Long cartItemId) {
+        User user = (User) authentication.getPrincipal();
         return shoppingCartService.removeBook(user.getId(), cartItemId);
     }
 
@@ -51,10 +53,10 @@ public class ShoppingCartController {
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Update Item Quantity in Cart",
             description = "Update the quantity of an item in the user's shopping cart.")
-    public ShoppingCartDto updateCartItemQuantity(
+    public ShoppingCartDto updateCartItemQuantity(Authentication authentication,
             @PathVariable Long cartItemId,
             @RequestBody UpdateBookQuantity request) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = (User) authentication.getPrincipal();
         return shoppingCartService.updateCartItemQuantity(user.getId(), cartItemId, request);
     }
 
@@ -62,8 +64,8 @@ public class ShoppingCartController {
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Get User Shopping Cart",
             description = "Retrieve the shopping cart from current user.")
-    public ShoppingCartDto getShoppingCart() {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ShoppingCartDto getShoppingCart(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
         return shoppingCartService.getShoppingCartByUserId(user.getId());
     }
 }
