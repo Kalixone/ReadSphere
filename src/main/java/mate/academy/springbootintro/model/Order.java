@@ -14,6 +14,7 @@ import jakarta.persistence.OneToMany;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import java.math.BigDecimal;
@@ -39,6 +40,7 @@ public class Order {
     private Status status;
     @Column(nullable = false)
     private BigDecimal total;
+    @CreationTimestamp
     @Column(name = "order_date", nullable = false)
     private LocalDateTime orderDate;
     @Column(name = "shipping_address", nullable = false)

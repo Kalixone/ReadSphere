@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @Tag(name = "Order management", description = "Endpoints for managing Orders")
@@ -39,9 +40,10 @@ public class OrderController {
     @PreAuthorize("hasAuthority('USER')")
     @GetMapping
     @Operation(summary = "Get Order History", description = "Get the order history for the user")
-    List<OrderDto> getOrderHistory(Authentication authentication) {
+    List<OrderDto> getOrderHistory(Pageable pageable,
+                                   Authentication authentication) {
         User user = (User) authentication.getPrincipal();
-        return orderService.getUserOrderHistory(user.getId());
+        return orderService.getUserOrderHistory(pageable, user.getId());
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -57,10 +59,11 @@ public class OrderController {
     @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/{orderId}/items")
     @Operation(summary = "Get Order Items", description = "Get the items for a specific order")
-    List<OrderItemDto> getOrderItems(Authentication authentication,
+    List<OrderItemDto> getOrderItems(Pageable pageable,
+                                     Authentication authentication,
                                      @PathVariable Long orderId) {
         User user = (User) authentication.getPrincipal();
-        return orderService.getOrderItems(user.getId(), orderId);
+        return orderService.getOrderItems(pageable, user.getId(), orderId);
     }
 
     @PreAuthorize("hasAuthority('USER')")

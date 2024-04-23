@@ -16,9 +16,11 @@ import mate.academy.springbootintro.model.CartItem;
 import mate.academy.springbootintro.model.OrderItem;
 import mate.academy.springbootintro.repository.cartitem.CartItemRepository;
 import mate.academy.springbootintro.repository.order.OrderRepository;
+import mate.academy.springbootintro.repository.orderitem.OrderItemRepository;
 import mate.academy.springbootintro.repository.shoppingcart.ShoppingCartRepository;
 import mate.academy.springbootintro.repository.user.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -31,6 +33,7 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final OrderRepository orderRepostiory;
+    private final OrderItemRepository orderItemRepository;
     private final OrderMapper orderMapper;
     private final ShoppingCartRepository shoppingCartRepository;
     private final OrderItemMapper orderItemMapper;
@@ -50,15 +53,16 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderDto> getUserOrderHistory(Long userId) {
+    public List<OrderDto> getUserOrderHistory(Pageable pageable, Long userId) {
         User user = userRepository.getReferenceById(userId);
-        List<Order> orders = orderRepostiory.findByUser(user);
+        List<Order> orders = orderRepostiory.findByUser(pageable, user);
         return orders.stream()
                 .map(orderMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional
     public OrderDto updateOrder(Long userId, Long orderId, UpdateOrderStatusRequest request) {
         Order order = orderRepostiory.getReferenceById(orderId);
         order.setStatus(request.status());
@@ -66,9 +70,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderItemDto> getOrderItems(Long userId, Long orderId) {
-        Order order = orderRepostiory.getReferenceById(orderId);
-        return order.getOrderItems().stream()
+    public List<OrderItemDto> getOrderItems(Pageable pageable, Long userId, Long orderId) {
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId, pageable);
+        return orderItems.stream()
                 .map(orderItemMapper::toDto)
                 .collect(Collectors.toList());
     }

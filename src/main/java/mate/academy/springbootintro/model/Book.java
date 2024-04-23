@@ -43,7 +43,7 @@ public class Book {
     private String coverImage;
     private String description;
     @Column(name = "categories")
-    @ManyToMany()
+    @ManyToMany
     @JoinTable(
             name = "books_categories",
             joinColumns = @JoinColumn(name = "book_id"),
