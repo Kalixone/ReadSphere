@@ -2,6 +2,7 @@ package mate.academy.springbootintro.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mate.academy.springbootintro.dto.OrderRequest;
 import mate.academy.springbootintro.dto.OrderDto;
@@ -32,7 +33,7 @@ public class OrderController {
     @PostMapping
     @Operation(summary = "Add Order", description = "Add a new order for the user")
     OrderDto addOrder(Authentication authentication,
-                      @RequestBody OrderRequest request) {
+                      @RequestBody @Valid OrderRequest request) {
         User user = (User) authentication.getPrincipal();
         return orderService.placeOrder(user.getId(), request);
     }
@@ -51,7 +52,7 @@ public class OrderController {
     @Operation(summary = "Update Order Status", description = "Update the status of an order")
     OrderDto updateOrderStatus(Authentication authentication,
                                @PathVariable Long id,
-                               @RequestBody UpdateOrderStatusRequest request) {
+                               @RequestBody @Valid UpdateOrderStatusRequest request) {
         User user = (User) authentication.getPrincipal();
         return orderService.updateOrder(user.getId(), id, request);
     }
