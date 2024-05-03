@@ -4,7 +4,7 @@ databaseChangeLog:
       author: kalixone
       changes:
         - insert:
-            tableName: Categories
+            tableName: categories
             columns:
               - column:
                   name: id
@@ -17,7 +17,7 @@ databaseChangeLog:
                   value: "magic"
 
         - insert:
-            tableName: Categories
+            tableName: categories
             columns:
               - column:
                   name: id

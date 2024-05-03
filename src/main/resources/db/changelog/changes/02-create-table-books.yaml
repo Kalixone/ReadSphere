@@ -25,7 +25,7 @@ databaseChangeLog:
                   name: price
                   type: DECIMAL(10, 2)
               - column:
-                  name: coverImage
+                  name: cover_image
                   type: VARCHAR(255)
               - column:
                   name: description

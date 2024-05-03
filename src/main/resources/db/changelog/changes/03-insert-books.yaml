@@ -19,7 +19,7 @@ databaseChangeLog:
                   name: price
                   value: 19.99
               - column:
-                  name: coverImage
+                  name: cover_image
                   value: "random_cover1.jpg"
               - column:
                   name: description
@@ -41,7 +41,7 @@ databaseChangeLog:
                   name: price
                   value: 29.99
               - column:
-                  name: coverImage
+                  name: cover_image
                   value: "random_cover2.jpg"
               - column:
                   name: description
@@ -63,7 +63,7 @@ databaseChangeLog:
                   name: price
                   value: 39.99
               - column:
-                  name: coverImage
+                  name: cover_image
                   value: "random_cover3.jpg"
               - column:
                   name: description
@@ -85,7 +85,7 @@ databaseChangeLog:
                   name: price
                   value: 49.99
               - column:
-                  name: coverImage
+                  name: cover_image
                   value: "random_cover4.jpg"
               - column:
                   name: description

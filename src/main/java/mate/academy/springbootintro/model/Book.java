@@ -40,6 +40,7 @@ public class Book {
     private String isbn;
     @Column(nullable = false)
     private BigDecimal price;
+    @Column(name = "cover_image")
     private String coverImage;
     private String description;
     @Column(name = "categories")
