@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -42,6 +41,10 @@ import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BookControllerTest {
+
+    private static final Long BOOK_ID_1 = 1L;
+    private static final Long BOOK_ID_2 = 2L;
+    private static final Long BOOK_ID_3 = 3L;
 
     protected static MockMvc mockMvc;
 
@@ -138,8 +141,12 @@ public class BookControllerTest {
         BookDto actual = objectMapper.readValue
                 (result.getResponse().getContentAsString(),
                         BookDto.class);
-
-        EqualsBuilder.reflectionEquals(expected, actual, "id");
+        Assertions.assertEquals(expected.getTitle(), actual.getTitle());
+        Assertions.assertEquals(expected.getAuthor(), actual.getAuthor());
+        Assertions.assertEquals(expected.getPrice(), actual.getPrice());
+        Assertions.assertEquals(expected.getCoverImage(), actual.getCoverImage());
+        Assertions.assertEquals(expected.getDescription(), actual.getDescription());
+        Assertions.assertIterableEquals(expected.getCategoriesIds(), actual.getCategoriesIds());
     }
 
     @Test
@@ -154,7 +161,7 @@ public class BookControllerTest {
     void getAll_ValidRequest_ReturnsAllBooks() throws Exception {
         // Given
         BookDto book1 = new BookDto();
-        book1.setId(1L);
+        book1.setId(BOOK_ID_1);
         book1.setTitle("Harry Potter");
         book1.setAuthor("Rowling");
         book1.setIsbn("123456789");
@@ -164,7 +171,7 @@ public class BookControllerTest {
         book1.setCategoriesIds(Collections.emptyList());
 
         BookDto book2 = new BookDto();
-        book2.setId(2L);
+        book2.setId(BOOK_ID_2);
         book2.setTitle("Władca Pierścieni");
         book2.setAuthor("Tolkien");
         book2.setIsbn("987654321");
@@ -174,7 +181,7 @@ public class BookControllerTest {
         book2.setCategoriesIds(Collections.emptyList());
 
         BookDto book3 = new BookDto();
-        book3.setId(3L);
+        book3.setId(BOOK_ID_3);
         book3.setTitle("Gra o Tron");
         book3.setAuthor("Martin");
         book3.setIsbn("555666777");
@@ -200,7 +207,7 @@ public class BookControllerTest {
         BookDto[] actual = objectMapper
                 .readValue(result.getResponse().getContentAsByteArray(), BookDto[].class);
         Assertions.assertEquals(3, actual.length);
-        Assertions.assertEquals(expected, Arrays.stream(actual).toList());
+        Assertions.assertIterableEquals(expected, Arrays.stream(actual).toList());
     }
 
     @Test
@@ -215,7 +222,7 @@ public class BookControllerTest {
     void getBookById_ValidId_ReturnsBookDto() throws Exception {
         // Given
         BookDto bookDto = new BookDto();
-        bookDto.setId(1L);
+        bookDto.setId(BOOK_ID_1);
         bookDto.setTitle("Harry Potter");
         bookDto.setAuthor("Rowling");
         bookDto.setIsbn("123456789");
@@ -236,7 +243,7 @@ public class BookControllerTest {
 
         // When
         MvcResult result = mockMvc.perform(
-                        get("/api/books/{id}", 1L)
+                        get("/api/books/{id}", BOOK_ID_1)
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
@@ -245,7 +252,14 @@ public class BookControllerTest {
         // Then
         BookDto actual = objectMapper
                 .readValue(result.getResponse().getContentAsString(), BookDto.class);
-        EqualsBuilder.reflectionEquals(expected, actual, "id");
+        Assertions.assertEquals(expected.getId(), actual.getId());
+        Assertions.assertEquals(expected.getTitle(), actual.getTitle());
+        Assertions.assertEquals(expected.getAuthor(), actual.getAuthor());
+        Assertions.assertEquals(expected.getIsbn(), actual.getIsbn());
+        Assertions.assertEquals(expected.getPrice(), actual.getPrice());
+        Assertions.assertEquals(expected.getCoverImage(), actual.getCoverImage());
+        Assertions.assertEquals(expected.getDescription(), actual.getDescription());
+        Assertions.assertIterableEquals(expected.getCategoriesIds(), actual.getCategoriesIds());
     }
 
     @Test
@@ -259,17 +273,17 @@ public class BookControllerTest {
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void deleteBookById_ValidId_DeletesBook() throws Exception {
         // Given
-        bookRepository.findById(1L);
+        bookRepository.findById(BOOK_ID_1);
 
         // When
         mockMvc.perform(
-                delete("/api/books/{id}", 1L)
+                delete("/api/books/{id}", BOOK_ID_1)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent())
                 .andReturn();
 
         // Then
-        Optional<Book> deletedBook = bookRepository.findById(1L);
+        Optional<Book> deletedBook = bookRepository.findById(BOOK_ID_1);
         Assertions.assertFalse(deletedBook.isPresent());
 
     }
@@ -277,9 +291,12 @@ public class BookControllerTest {
     @Test
     @WithMockUser(username = "piotrek", authorities = {"ADMIN"})
     @DisplayName("""
-            Update book with specific ID
+            Search books with valid query parameters
             """)
-    @Sql(scripts = "classpath:database/books/add-3-books-to-books-table.sql",
+    @Sql(scripts = {
+            "classpath:database/books/delete-books-from-books-table.sql",
+            "classpath:database/books/add-3-books-to-books-table.sql"
+    },
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "classpath:database/books/delete-books-from-books-table.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -287,6 +304,20 @@ public class BookControllerTest {
         // Given
         String searchTitle = "Harry Potter";
         String searchAuthor = "Rowling";
+
+        List<BookDto> expected = new ArrayList<>();
+        BookDto expectedBook = new BookDto();
+        expectedBook.setId(BOOK_ID_1);
+        expectedBook.setTitle(searchTitle);
+        expectedBook.setAuthor(searchAuthor);
+        expectedBook.setTitle(searchTitle);
+        expectedBook.setAuthor(searchAuthor);
+        expectedBook.setIsbn("123456789");
+        expectedBook.setPrice(BigDecimal.valueOf(19.99));
+        expectedBook.setDescription("great book");
+        expectedBook.setCoverImage("randomImage1.jpg");
+        expectedBook.setCategoriesIds(Collections.emptyList());
+        expected.add(expectedBook);
 
         // When
         MvcResult result = mockMvc.perform(
@@ -299,12 +330,9 @@ public class BookControllerTest {
                 .andReturn();
 
         // Then
-        BookDto[] actual = objectMapper
+        BookDto[] actualArray = objectMapper
                 .readValue(result.getResponse().getContentAsString(), BookDto[].class);
-
-        Assertions.assertTrue(Arrays.stream(actual)
-                        .allMatch(book -> book.getTitle().contains(searchTitle)
-                                && book.getAuthor().equals(searchAuthor)),
-                "Search results do not contain the expected books");
+        List<BookDto> actualList = Arrays.stream(actualArray).collect(Collectors.toList());
+        Assertions.assertIterableEquals(expected, actualList);
     }
 }

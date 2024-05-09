@@ -22,6 +22,7 @@ import java.util.List;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class BookRepositoryTest {
 
+    private static final Long CATEGORY_ID = 2L;
     @Autowired
     private BookRepository bookRepository;
 
@@ -50,6 +51,8 @@ public class BookRepositoryTest {
             Verify findAllByCategoryId() method works
             """)
     @Sql(scripts = {
+            "classpath:database/books/delete-books-from-books-table.sql",
+            "classpath:database/categories/delete-categories-from-categories-table.sql",
             "classpath:database/categories/add-2-categories-to-categories-table.sql",
             "classpath:database/books/add-3-books-to-books-table.sql",
             "classpath:database/books_categories/" +
@@ -65,11 +68,8 @@ public class BookRepositoryTest {
     },
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void findAllByCategoryId_ValidCategoryId_ReturnsBooks() {
-        // Given
-        Long categoryId = 2L;
-
         // When
-        List<Book> books = bookRepository.findAllByCategoryId(categoryId);
+        List<Book> books = bookRepository.findAllByCategoryId(CATEGORY_ID);
 
         // Then
         assertNotNull(books);

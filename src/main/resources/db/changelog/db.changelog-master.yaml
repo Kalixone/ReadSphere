@@ -3,14 +3,14 @@ databaseChangeLog:
       file: db/changelog/changes/01-create-user-and-role-table.yaml
   - include:
       file: db/changelog/changes/02-create-table-books.yaml
-#  - include:
-#      file: db/changelog/changes/03-insert-books.yaml
+  - include:
+      file: db/changelog/changes/03-insert-books.yaml
   - include:
       file: db/changelog/changes/04-create-user-roles-table.yaml
   - include:
       file: db/changelog/changes/05-create-categories-table.yaml
-#  - include:
-#      file: db/changelog/changes/06-insert-categories.yaml
+  - include:
+      file: db/changelog/changes/06-insert-categories.yaml
   - include:
       file: db/changelog/changes/07-create-book-categories-table.yaml
   - include:

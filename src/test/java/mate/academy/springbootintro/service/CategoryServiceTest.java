@@ -26,6 +26,10 @@ import java.util.Optional;
 @ExtendWith(MockitoExtension.class)
 public class CategoryServiceTest {
 
+    private static final Long VALID_CATEGORY_ID = 1L;
+    private static final int PAGE_SIZE = 10;
+    private static final int PAGE_NUMBER = 0;
+
     @InjectMocks
     private CategoryServiceImpl categoryService;
 
@@ -42,7 +46,7 @@ public class CategoryServiceTest {
     public void createCategory_ValidRequestDto_ReturnsCategoryDto() {
         // Given
         CreateCategoryRequestDto requestDto = new CreateCategoryRequestDto(
-                "Horor",
+                "Horror",
                 "Scary"
         );
 
@@ -51,7 +55,7 @@ public class CategoryServiceTest {
         category.setDescription(requestDto.description());
 
         CategoryDto categoryDto = new CategoryDto(
-                1L,
+                VALID_CATEGORY_ID,
                 category.getName(),
                 category.getDescription()
         );
@@ -77,7 +81,7 @@ public class CategoryServiceTest {
     public void findAll_ValidPageable_ReturnsAllCategories() {
         // Given
         Category category = new Category();
-        category.setId(1L);
+        category.setId(VALID_CATEGORY_ID);
         category.setName("Horror");
         category.setDescription("Scary");
 
@@ -87,7 +91,7 @@ public class CategoryServiceTest {
                 category.getDescription()
         );
 
-        Pageable pageable = PageRequest.of(0,10);
+        Pageable pageable = PageRequest.of(PAGE_NUMBER,PAGE_SIZE);
         List<Category> categories = List.of(category);
         Page<Category> categoriesPage = new PageImpl<>(categories, pageable, categories.size());
 
@@ -112,10 +116,8 @@ public class CategoryServiceTest {
             """)
     public void getById_ValidId_ReturnsCategoryDto() {
         // Given
-        Long categoryId = 1L;
-
         Category category = new Category();
-        category.setId(categoryId);
+        category.setId(VALID_CATEGORY_ID);
         category.setName("Horror");
         category.setDescription("Scary");
 
@@ -125,16 +127,16 @@ public class CategoryServiceTest {
                 category.getDescription()
         );
 
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+        when(categoryRepository.findById(VALID_CATEGORY_ID)).thenReturn(Optional.of(category));
         when(categoryMapper.toDto(category)).thenReturn(expectedCategoryDto);
 
         // When
-        CategoryDto savedCategoryDto = categoryService.getById(categoryId);
+        CategoryDto savedCategoryDto = categoryService.getById(VALID_CATEGORY_ID);
 
         // Then
         assertThat(savedCategoryDto).isEqualTo(expectedCategoryDto);
 
-        verify(categoryRepository, times(1)).findById(categoryId);
+        verify(categoryRepository, times(1)).findById(VALID_CATEGORY_ID);
         verify(categoryMapper, times(1)).toDto(category);
         verifyNoMoreInteractions(categoryRepository, categoryMapper);
 
@@ -145,14 +147,11 @@ public class CategoryServiceTest {
             Verify deleteById() method works
             """)
     public void deleteById_ValidId_DeletesCategory() {
-        // Given
-        Long categoryId = 1L;
-
         // When
-        categoryService.deleteById(categoryId);
+        categoryService.deleteById(VALID_CATEGORY_ID);
 
         // Then
-        verify(categoryRepository, times(1)).deleteById(categoryId);
+        verify(categoryRepository, times(1)).deleteById(VALID_CATEGORY_ID);
         verifyNoMoreInteractions(categoryRepository);
     }
 }

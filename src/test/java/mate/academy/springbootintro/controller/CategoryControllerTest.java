@@ -37,6 +37,9 @@ import java.util.Optional;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CategoryControllerTest {
 
+    private static final Long CATEGORY_ID_1 = 1L;
+    private static final Long CATEGORY_ID_2 = 2L;
+
     protected static MockMvc mockMvc;
 
     @Autowired
@@ -89,7 +92,7 @@ public class CategoryControllerTest {
         );
 
         CategoryDto expected = new CategoryDto(
-                1L,
+                CATEGORY_ID_1,
                 requestDto.name(),
                 requestDto.description()
         );
@@ -123,13 +126,13 @@ public class CategoryControllerTest {
     void getAll_Categories_ReturnsAllCategories() throws Exception {
         // Given
         CategoryDto category1 = new CategoryDto(
-                1L,
+                CATEGORY_ID_1,
                 "Fiction",
                 "Fiction books"
         );
 
         CategoryDto category2 = new CategoryDto(
-                2L,
+                CATEGORY_ID_2,
                 "Fantasy",
                 "Fantasy books"
         );
@@ -150,7 +153,7 @@ public class CategoryControllerTest {
         CategoryDto[] actual = objectMapper
                 .readValue(result.getResponse().getContentAsByteArray(), CategoryDto[].class);
         Assertions.assertEquals(2, actual.length);
-        Assertions.assertEquals(expected, Arrays.stream(actual).toList());
+        Assertions.assertIterableEquals(expected, Arrays.stream(actual).toList());
     }
 
     @Test
@@ -158,23 +161,24 @@ public class CategoryControllerTest {
     @DisplayName("""
             Get category by ID
             """)
-    @Sql(scripts = "classpath:database/categories/add-2-categories-to-categories-table.sql",
+    @Sql(scripts = {
+            "classpath:database/categories/delete-categories-from-categories-table.sql",
+            "classpath:database/categories/add-2-categories-to-categories-table.sql"
+    },
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "classpath:database/categories/delete-categories-from-categories-table.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void getCategoryById_ValidId_ReturnsCategoryDto() throws Exception {
         // Given
-        Long categoryId = 1L;
-
         CategoryDto expected = new CategoryDto(
-                1L,
+                CATEGORY_ID_1,
                 "Fiction",
                 "Fiction books"
         );
 
         // When
         MvcResult result = mockMvc.perform(
-                        get("/api/categories/{id}", 1L)
+                        get("/api/categories/{id}", CATEGORY_ID_1)
                                 .contentType(MediaType.APPLICATION_JSON)
                 ).andExpect(status().isOk())
                 .andReturn();
@@ -196,17 +200,17 @@ public class CategoryControllerTest {
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void deleteCategory_ValidId_DeletesCategory() throws Exception {
         // Given
-        categoryRepository.findById(1L);
+        categoryRepository.findById(CATEGORY_ID_1);
 
         // When
         mockMvc.perform(
-                        delete("/api/categories/{id}", 1L)
+                        delete("/api/categories/{id}", CATEGORY_ID_1)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
 
         // Then
-        Optional<Category> deletedCategory = categoryRepository.findById(1L);
+        Optional<Category> deletedCategory = categoryRepository.findById(CATEGORY_ID_1);
         Assertions.assertFalse(deletedCategory.isPresent());
     }
 }
