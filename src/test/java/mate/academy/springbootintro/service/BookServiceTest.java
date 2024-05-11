@@ -39,6 +39,21 @@ public class BookServiceTest {
     private static final Long BOOK_ID = 1L;
     private static final int PAGE_NUMBER = 0;
     private static final int PAGE_SIZE = 10;
+    private static final String CATEGORY_NAME_1 = "fantasy";
+    private static final String CATEGORY_NAME_2 = "action";
+    private static final String CATEGORY_DESCRIPTION_1 = "dragons";
+    private static final String CATEGORY_DESCRIPTION_2 = "pif_paf";
+    private static final String BOOK_TITLE = "Witch";
+    private static final String BOOK_AUTHOR = "Wojciech Rogusz";
+    private static final String BOOK_COVER_IMAGE = "https://randomImage1.jpg";
+    private static final String BOOK_DESCRIPTION = "solid book";
+    private static final String BOOK_ISBN = "123-123-123";
+    private static final BigDecimal BOOK_PRICE = BigDecimal.TEN;
+    private static final String UPDATED_BOOK_TITLE = "Updated Title";
+    private static final String UPDATED_BOOK_AUTHOR = "Updated Author";
+    private static final BigDecimal UPDATED_BOOK_PRICE = BigDecimal.ONE;
+    private static final String UPDATED_BOOK_COVER_IMAGE = "https://Updated_Cover_Image.jpg";
+    private static final String UPDATED_BOOK_DESCRIPTION = "Updated Description";
 
     @InjectMocks
     private BookServiceImpl bookService;
@@ -57,22 +72,19 @@ public class BookServiceTest {
         // Given
         Category category1 = new Category();
         category1.setId(CATEGORY_ID_1);
-        category1.setDescription("fantasy");
-        category1.setDescription("dragons");
+        category1.setName(CATEGORY_NAME_1);
+        category1.setDescription(CATEGORY_DESCRIPTION_1);
 
         Category category2 = new Category();
-        category2.setId(CATEGORY_ID_2);
-        category2.setName("action");
-        category1.setDescription("pif-paf");
+        category1.setId(CATEGORY_ID_2);
+        category1.setName(CATEGORY_NAME_2);
+        category1.setDescription(CATEGORY_DESCRIPTION_2);
 
-        CreateBookRequestDto requestDto = new CreateBookRequestDto
-                ("Czarownica",
-                        "Ryszard Rogusz",
-                        BigDecimal.TEN,
-                        "random_cover1.jpg",
-                        "great book",
-                        Set.of(category1, category2)
-                );
+        CreateBookRequestDto requestDto = new CreateBookRequestDto(
+                BOOK_TITLE, BOOK_AUTHOR,
+                BOOK_PRICE, BOOK_COVER_IMAGE,
+                BOOK_DESCRIPTION, Set.of(category1, category2)
+        );
 
         Book book = new Book();
         book.setTitle(requestDto.title());
@@ -115,22 +127,22 @@ public class BookServiceTest {
         // Given
         Category category1 = new Category();
         category1.setId(CATEGORY_ID_1);
-        category1.setDescription("fantasy");
-        category1.setDescription("dragons");
+        category1.setName(CATEGORY_NAME_1);
+        category1.setDescription(CATEGORY_DESCRIPTION_1);
 
         Category category2 = new Category();
         category2.setId(CATEGORY_ID_2);
-        category2.setName("action");
-        category1.setDescription("pif-paf");
+        category2.setName(CATEGORY_NAME_2);
+        category1.setDescription(CATEGORY_DESCRIPTION_2);
 
         Book book = new Book();
         book.setId(BOOK_ID);
-        book.setTitle("Godzilla");
-        book.setAuthor("Vermud");
-        book.setIsbn("123456789");
-        book.setPrice(BigDecimal.TEN);
-        book.setCoverImage("random_cover2.jpg");
-        book.setDescription("big monster");
+        book.setTitle(BOOK_TITLE);
+        book.setAuthor(BOOK_AUTHOR);
+        book.setIsbn(BOOK_ISBN);
+        book.setPrice(BOOK_PRICE);
+        book.setCoverImage(BOOK_COVER_IMAGE);
+        book.setDescription(BOOK_DESCRIPTION);
         book.setCategories(Set.of(category1, category2));
 
         BookDto bookDto = new BookDto();
@@ -172,22 +184,22 @@ public class BookServiceTest {
         // Given
         Category category1 = new Category();
         category1.setId(CATEGORY_ID_1);
-        category1.setDescription("fantasy");
-        category1.setDescription("dragons");
+        category1.setName(CATEGORY_NAME_1);
+        category1.setDescription(CATEGORY_DESCRIPTION_1);
 
         Category category2 = new Category();
         category2.setId(CATEGORY_ID_2);
-        category2.setName("action");
-        category1.setDescription("pif-paf");
+        category2.setName(CATEGORY_NAME_2);
+        category1.setDescription(CATEGORY_DESCRIPTION_2);
 
         Book book = new Book();
         book.setId(BOOK_ID);
-        book.setTitle("Godzilla");
-        book.setAuthor("Vermud");
-        book.setIsbn("123456789");
-        book.setPrice(BigDecimal.TEN);
-        book.setCoverImage("random_cover2.jpg");
-        book.setDescription("big monster");
+        book.setTitle(BOOK_TITLE);
+        book.setAuthor(BOOK_AUTHOR);
+        book.setIsbn(BOOK_ISBN);
+        book.setPrice(BOOK_PRICE);
+        book.setCoverImage(BOOK_COVER_IMAGE);
+        book.setDescription(BOOK_DESCRIPTION);
         book.setCategories(Set.of(category1, category2));
 
         BookDto expectedBookDto = new BookDto();
@@ -238,38 +250,37 @@ public class BookServiceTest {
     public void updateBook_ValidBookRequestDto_ReturnsBookDto() {
         // Given
         UpdateBookRequestDto updateBookRequestDto = new UpdateBookRequestDto(
-                "Updated Title",
-                "Updated Author",
-                new BigDecimal("19.99"),
-                "updated_cover_image.jpg",
-                "Updated Description"
+                UPDATED_BOOK_TITLE, UPDATED_BOOK_AUTHOR,
+                UPDATED_BOOK_PRICE, UPDATED_BOOK_COVER_IMAGE,
+                UPDATED_BOOK_DESCRIPTION
         );
+
         Book existingBook = new Book();
         existingBook.setId(BOOK_ID);
-        existingBook.setTitle("Original Title");
-        existingBook.setAuthor("Original Author");
-        existingBook.setPrice(new BigDecimal("10.99"));
-        existingBook.setCoverImage("original_cover_image.jpg");
-        existingBook.setDescription("Original Description");
+        existingBook.setTitle(BOOK_TITLE);
+        existingBook.setAuthor(BOOK_AUTHOR);
+        existingBook.setPrice(BOOK_PRICE);
+        existingBook.setCoverImage(BOOK_COVER_IMAGE);
+        existingBook.setDescription(BOOK_DESCRIPTION);
 
         Book updatedBook = new Book();
         updatedBook.setId(BOOK_ID);
-        updatedBook.setTitle("Updated Title");
-        updatedBook.setAuthor("Updated Author");
-        updatedBook.setPrice(new BigDecimal("19.99"));
-        updatedBook.setCoverImage("updated_cover_image.jpg");
-        updatedBook.setDescription("Updated Description");
+        updatedBook.setTitle(UPDATED_BOOK_TITLE);
+        updatedBook.setAuthor(UPDATED_BOOK_AUTHOR);
+        updatedBook.setPrice(UPDATED_BOOK_PRICE);
+        updatedBook.setCoverImage(UPDATED_BOOK_COVER_IMAGE);
+        updatedBook.setDescription(UPDATED_BOOK_DESCRIPTION);
 
         when(bookRepository.findById(BOOK_ID)).thenReturn(Optional.of(existingBook));
         when(bookRepository.save(existingBook)).thenReturn(updatedBook);
 
         BookDto expectedBookDto = new BookDto();
         expectedBookDto.setId(BOOK_ID);
-        expectedBookDto.setTitle("Updated Title");
-        expectedBookDto.setAuthor("Updated Author");
-        expectedBookDto.setPrice(new BigDecimal("19.99"));
-        expectedBookDto.setCoverImage("updated_cover_image.jpg");
-        expectedBookDto.setDescription("Updated Description");
+        expectedBookDto.setTitle(UPDATED_BOOK_TITLE);
+        expectedBookDto.setAuthor(UPDATED_BOOK_AUTHOR);
+        expectedBookDto.setPrice(UPDATED_BOOK_PRICE);
+        expectedBookDto.setCoverImage(UPDATED_BOOK_COVER_IMAGE);
+        expectedBookDto.setDescription(UPDATED_BOOK_DESCRIPTION);
         expectedBookDto.setCategoriesIds(List.of());
 
         when(bookMapper.toDto(updatedBook)).thenReturn(expectedBookDto);
@@ -280,11 +291,11 @@ public class BookServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(BOOK_ID, result.getId());
-        assertEquals("Updated Title", result.getTitle());
-        assertEquals("Updated Author", result.getAuthor());
-        assertEquals(new BigDecimal("19.99"), result.getPrice());
-        assertEquals("updated_cover_image.jpg", result.getCoverImage());
-        assertEquals("Updated Description", result.getDescription());
+        assertEquals(UPDATED_BOOK_TITLE, result.getTitle());
+        assertEquals(UPDATED_BOOK_AUTHOR, result.getAuthor());
+        assertEquals(UPDATED_BOOK_PRICE, result.getPrice());
+        assertEquals(UPDATED_BOOK_COVER_IMAGE, result.getCoverImage());
+        assertEquals(UPDATED_BOOK_DESCRIPTION, result.getDescription());
 
         verify(bookRepository, times(1)).findById(BOOK_ID);
         verify(bookRepository, times(1)).save(existingBook);
@@ -299,16 +310,16 @@ public class BookServiceTest {
         // Given
         Category category1 = new Category();
         category1.setId(CATEGORY_ID_1);
-        category1.setName("Fantasy");
-        category1.setDescription("Dragons and magic");
+        category1.setName(CATEGORY_NAME_1);
+        category1.setDescription(CATEGORY_DESCRIPTION_1);
 
         Book book = new Book();
-        book.setTitle("Godzilla");
-        book.setAuthor("Vermud");
-        book.setIsbn("123456789");
-        book.setPrice(BigDecimal.TEN);
-        book.setCoverImage("random_cover2.jpg");
-        book.setDescription("big monster");
+        book.setTitle(BOOK_TITLE);
+        book.setAuthor(BOOK_AUTHOR);
+        book.setIsbn(BOOK_ISBN);
+        book.setPrice(BOOK_PRICE);
+        book.setCoverImage(BOOK_COVER_IMAGE);
+        book.setDescription(BOOK_DESCRIPTION);
         book.setCategories(Set.of(category1));
 
         // When

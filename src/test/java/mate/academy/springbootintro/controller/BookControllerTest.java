@@ -38,15 +38,38 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BookControllerTest {
 
+    protected static MockMvc mockMvc;
     private static final Long BOOK_ID_1 = 1L;
     private static final Long BOOK_ID_2 = 2L;
     private static final Long BOOK_ID_3 = 3L;
-
-    protected static MockMvc mockMvc;
+    private static final String SPRING_DATASOURCE_URL =
+            "spring.datasource.url";
+    private static final String SPRING_DATASOURCE_USERNAME =
+            "spring.datasource.username";
+    private static final String SPRING_DATASOURCE_PASSWORD =
+            "spring.datasource.password";
+    private static final String SPRING_DATASOURCE_DRIVER_CLASS_NAME =
+            "spring.datasource.driver-class-name";
+    private static final String CATEGORY_NAME = "magic";
+    private static final String CATEGORY_DESCRIPTION = "dragons";
+    private static final String BOOK_TITLE_1 = "Rekrut";
+    private static final String BOOK_AUTHOR_1 = "Vanbord";
+    private static final String BOOK_COVER_IMAGE_1 = "https://randomImage1.jpg";
+    private static final String BOOK_DESCRIPTION_1 = "great book";
+    private static final BigDecimal BOOK_PRICE_1 = BigDecimal.TEN;
+    private static final String BOOK_TITLE_2 = "Harry Potter";
+    private static final String BOOK_AUTHOR_2 = "Rowling";
+    private static final String BOOK_ISBN_2 = "123456789";
+    private static final BigDecimal BOOK_PRICE_2 = BigDecimal.valueOf(19.99);
+    private static final String BOOK_COVER_IMAGE_2 = "https://randomImage1.jpg";
+    private static final String BOOK_DESCRIPTION_2 = "great book";
+    private static final String BOOK_SEARCH_TITLE = "Harry Potter";
+    private static final String BOOK_SEARCH_AUTHOR = "Rowling";
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -63,10 +86,10 @@ public class BookControllerTest {
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         CustomMySqlContainer mysqlContainer = CustomMySqlContainer.getInstance();
-        registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl);
-        registry.add("spring.datasource.username", mysqlContainer::getUsername);
-        registry.add("spring.datasource.password", mysqlContainer::getPassword);
-        registry.add("spring.datasource.driver-class-name", mysqlContainer::getDriverClassName);
+        registry.add(SPRING_DATASOURCE_URL, mysqlContainer::getJdbcUrl);
+        registry.add(SPRING_DATASOURCE_USERNAME, mysqlContainer::getUsername);
+        registry.add(SPRING_DATASOURCE_PASSWORD, mysqlContainer::getPassword);
+        registry.add(SPRING_DATASOURCE_DRIVER_CLASS_NAME, mysqlContainer::getDriverClassName);
     }
 
     @BeforeAll
@@ -92,6 +115,11 @@ public class BookControllerTest {
             Create a new book
             """)
     @Sql(scripts = {
+            "classpath:database/books/delete-books-from-books-table.sql",
+            "classpath:database/books/add-3-books-to-books-table.sql"
+    },
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {
             "classpath:database/books_categories/" +
                     "delete-book_id-and_category_id-from-books_categories-table.sql",
             "classpath:database/books/delete-books-from-books-table.sql",
@@ -102,17 +130,17 @@ public class BookControllerTest {
     void createBook_ValidRequestDto_CreatesNewBook() throws Exception {
         // Given
         Category category = new Category();
-        category.setName("magic");
-        category.setDescription("dragons");
+        category.setName(CATEGORY_NAME);
+        category.setDescription(CATEGORY_DESCRIPTION);
 
         categoryRepository.save(category);
 
         CreateBookRequestDto requestDto = new CreateBookRequestDto(
-                "Lalka",
-                "Fredryk",
-                BigDecimal.TEN,
-                "http://example.com/randomImage.jpg",
-                "good book",
+                BOOK_TITLE_1,
+                BOOK_AUTHOR_1,
+                BOOK_PRICE_1,
+                BOOK_COVER_IMAGE_1,
+                BOOK_DESCRIPTION_1,
                 Set.of(category)
         );
 
@@ -141,11 +169,8 @@ public class BookControllerTest {
         BookDto actual = objectMapper.readValue
                 (result.getResponse().getContentAsString(),
                         BookDto.class);
-        Assertions.assertEquals(expected.getTitle(), actual.getTitle());
-        Assertions.assertEquals(expected.getAuthor(), actual.getAuthor());
-        Assertions.assertEquals(expected.getPrice(), actual.getPrice());
-        Assertions.assertEquals(expected.getCoverImage(), actual.getCoverImage());
-        Assertions.assertEquals(expected.getDescription(), actual.getDescription());
+
+        EqualsBuilder.reflectionEquals(expected, actual, "id");
         Assertions.assertIterableEquals(expected.getCategoriesIds(), actual.getCategoriesIds());
     }
 
@@ -154,46 +179,16 @@ public class BookControllerTest {
     @DisplayName("""
             Get all books
             """)
-    @Sql(scripts = "classpath:database/books/add-3-books-to-books-table.sql",
+    @Sql(scripts = {
+            "classpath:database/books/delete-books-from-books-table.sql",
+            "classpath:database/books/add-3-books-to-books-table.sql"
+    },
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "classpath:database/books/delete-books-from-books-table.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void getAll_ValidRequest_ReturnsAllBooks() throws Exception {
         // Given
-        BookDto book1 = new BookDto();
-        book1.setId(BOOK_ID_1);
-        book1.setTitle("Harry Potter");
-        book1.setAuthor("Rowling");
-        book1.setIsbn("123456789");
-        book1.setPrice(BigDecimal.valueOf(19.99));
-        book1.setCoverImage("randomImage1.jpg");
-        book1.setDescription("great book");
-        book1.setCategoriesIds(Collections.emptyList());
-
-        BookDto book2 = new BookDto();
-        book2.setId(BOOK_ID_2);
-        book2.setTitle("Władca Pierścieni");
-        book2.setAuthor("Tolkien");
-        book2.setIsbn("987654321");
-        book2.setPrice(BigDecimal.valueOf(25.99));
-        book2.setCoverImage("randomImage2.jpg");
-        book2.setDescription("great book");
-        book2.setCategoriesIds(Collections.emptyList());
-
-        BookDto book3 = new BookDto();
-        book3.setId(BOOK_ID_3);
-        book3.setTitle("Gra o Tron");
-        book3.setAuthor("Martin");
-        book3.setIsbn("555666777");
-        book3.setPrice(BigDecimal.valueOf(29.99));
-        book3.setCoverImage("randomImage3.jpg");
-        book3.setDescription("great book");
-        book3.setCategoriesIds(Collections.emptyList());
-
-        List<BookDto> expected = new ArrayList<>();
-        expected.add(book1);
-        expected.add(book2);
-        expected.add(book3);
+        List<BookDto> expected = prepareExpectedBooks();
 
         // When
         MvcResult result = mockMvc.perform(
@@ -215,7 +210,10 @@ public class BookControllerTest {
     @DisplayName("""
             Get book by ID
             """)
-    @Sql(scripts = "classpath:database/books/add-3-books-to-books-table.sql",
+    @Sql(scripts = {
+            "classpath:database/books/delete-books-from-books-table.sql",
+            "classpath:database/books/add-3-books-to-books-table.sql"
+    },
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "classpath:database/books/delete-books-from-books-table.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -223,12 +221,12 @@ public class BookControllerTest {
         // Given
         BookDto bookDto = new BookDto();
         bookDto.setId(BOOK_ID_1);
-        bookDto.setTitle("Harry Potter");
-        bookDto.setAuthor("Rowling");
-        bookDto.setIsbn("123456789");
-        bookDto.setPrice(BigDecimal.valueOf(19.99));
-        bookDto.setCoverImage("randomImage1.jpg");
-        bookDto.setDescription("great book");
+        bookDto.setTitle(BOOK_TITLE_2);
+        bookDto.setAuthor(BOOK_AUTHOR_2);
+        bookDto.setIsbn(BOOK_ISBN_2);
+        bookDto.setPrice(BOOK_PRICE_2);
+        bookDto.setCoverImage(BOOK_COVER_IMAGE_2);
+        bookDto.setDescription(BOOK_DESCRIPTION_2);
         bookDto.setCategoriesIds(Collections.emptyList());
 
         BookDto expected = new BookDto();
@@ -252,13 +250,8 @@ public class BookControllerTest {
         // Then
         BookDto actual = objectMapper
                 .readValue(result.getResponse().getContentAsString(), BookDto.class);
-        Assertions.assertEquals(expected.getId(), actual.getId());
-        Assertions.assertEquals(expected.getTitle(), actual.getTitle());
-        Assertions.assertEquals(expected.getAuthor(), actual.getAuthor());
-        Assertions.assertEquals(expected.getIsbn(), actual.getIsbn());
-        Assertions.assertEquals(expected.getPrice(), actual.getPrice());
-        Assertions.assertEquals(expected.getCoverImage(), actual.getCoverImage());
-        Assertions.assertEquals(expected.getDescription(), actual.getDescription());
+
+        EqualsBuilder.reflectionEquals(expected, actual, "id");
         Assertions.assertIterableEquals(expected.getCategoriesIds(), actual.getCategoriesIds());
     }
 
@@ -267,7 +260,10 @@ public class BookControllerTest {
     @DisplayName("""
             Delete book by ID
             """)
-    @Sql(scripts = "classpath:database/books/add-3-books-to-books-table.sql",
+    @Sql(scripts = {
+            "classpath:database/books/delete-books-from-books-table.sql",
+            "classpath:database/books/add-3-books-to-books-table.sql"
+    },
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "classpath:database/books/delete-books-from-books-table.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -302,28 +298,23 @@ public class BookControllerTest {
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void searchBooksByParameters_ValidQuery_ReturnsExpectedResults() throws Exception {
         // Given
-        String searchTitle = "Harry Potter";
-        String searchAuthor = "Rowling";
-
         List<BookDto> expected = new ArrayList<>();
         BookDto expectedBook = new BookDto();
         expectedBook.setId(BOOK_ID_1);
-        expectedBook.setTitle(searchTitle);
-        expectedBook.setAuthor(searchAuthor);
-        expectedBook.setTitle(searchTitle);
-        expectedBook.setAuthor(searchAuthor);
-        expectedBook.setIsbn("123456789");
-        expectedBook.setPrice(BigDecimal.valueOf(19.99));
-        expectedBook.setDescription("great book");
-        expectedBook.setCoverImage("randomImage1.jpg");
+        expectedBook.setTitle(BOOK_SEARCH_TITLE);
+        expectedBook.setAuthor(BOOK_SEARCH_AUTHOR);
+        expectedBook.setIsbn(BOOK_ISBN_2);
+        expectedBook.setPrice(BOOK_PRICE_2);
+        expectedBook.setDescription(BOOK_DESCRIPTION_2);
+        expectedBook.setCoverImage(BOOK_COVER_IMAGE_2);
         expectedBook.setCategoriesIds(Collections.emptyList());
         expected.add(expectedBook);
 
         // When
         MvcResult result = mockMvc.perform(
                         get("/api/books/search")
-                                .param("title", searchTitle)
-                                .param("author", searchAuthor)
+                                .param("title", BOOK_SEARCH_TITLE)
+                                .param("author", BOOK_SEARCH_AUTHOR)
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
@@ -334,5 +325,32 @@ public class BookControllerTest {
                 .readValue(result.getResponse().getContentAsString(), BookDto[].class);
         List<BookDto> actualList = Arrays.stream(actualArray).collect(Collectors.toList());
         Assertions.assertIterableEquals(expected, actualList);
+    }
+
+    private BookDto createBookDto(
+            Long id, String title, String author,
+            String isbn, BigDecimal price, String coverImage,
+            String description, List<Long> categoriesIds) {
+        BookDto bookDto = new BookDto();
+        bookDto.setId(id);
+        bookDto.setTitle(title);
+        bookDto.setAuthor(author);
+        bookDto.setIsbn(isbn);
+        bookDto.setPrice(price);
+        bookDto.setCoverImage(coverImage);
+        bookDto.setDescription(description);
+        bookDto.setCategoriesIds(categoriesIds);
+        return bookDto;
+    }
+
+    private List<BookDto> prepareExpectedBooks() {
+        List<BookDto> expected = new ArrayList<>();
+        expected.add(createBookDto(BOOK_ID_1, "Harry Potter", "Rowling", "123456789",
+                BigDecimal.valueOf(19.99), "https://randomImage1.jpg", "great book", Collections.emptyList()));
+        expected.add(createBookDto(BOOK_ID_2, "Władca Pierścieni", "Tolkien", "987654321",
+                BigDecimal.valueOf(25.99), "https://randomImage2.jpg", "great book", Collections.emptyList()));
+        expected.add(createBookDto(BOOK_ID_3, "Gra o Tron", "Martin", "555666777",
+                BigDecimal.valueOf(29.99), "https://randomImage3.jpg", "great book", Collections.emptyList()));
+        return expected;
     }
 }

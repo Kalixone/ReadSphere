@@ -23,16 +23,26 @@ import java.util.List;
 public class BookRepositoryTest {
 
     private static final Long CATEGORY_ID = 2L;
+    private static final String EXPECTED_BOOK_TITLE_1 = "Harry Potter";
+    private static final String EXPECTED_BOOK_TITLE_2 = "Gra o Tron";
+    private static final String SPRING_DATASOURCE_URL =
+            "spring.datasource.url";
+    private static final String SPRING_DATASOURCE_USERNAME =
+            "spring.datasource.username";
+    private static final String SPRING_DATASOURCE_PASSWORD =
+            "spring.datasource.password";
+    private static final String SPRING_DATASOURCE_DRIVER_CLASS_NAME =
+            "spring.datasource.driver-class-name";
     @Autowired
     private BookRepository bookRepository;
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         CustomMySqlContainer mysqlContainer = CustomMySqlContainer.getInstance();
-        registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl);
-        registry.add("spring.datasource.username", mysqlContainer::getUsername);
-        registry.add("spring.datasource.password", mysqlContainer::getPassword);
-        registry.add("spring.datasource.driver-class-name", mysqlContainer::getDriverClassName);
+        registry.add(SPRING_DATASOURCE_URL, mysqlContainer::getJdbcUrl);
+        registry.add(SPRING_DATASOURCE_USERNAME, mysqlContainer::getUsername);
+        registry.add(SPRING_DATASOURCE_PASSWORD, mysqlContainer::getPassword);
+        registry.add(SPRING_DATASOURCE_DRIVER_CLASS_NAME, mysqlContainer::getDriverClassName);
     }
 
     @BeforeAll
@@ -74,7 +84,7 @@ public class BookRepositoryTest {
         // Then
         assertNotNull(books);
         assertEquals(2, books.size());
-        assertTrue(books.stream().anyMatch(book -> book.getTitle().equals("Harry Potter")));
-        assertTrue(books.stream().anyMatch(book -> book.getTitle().equals("Gra o Tron")));
+        assertTrue(books.stream().anyMatch(book -> book.getTitle().equals(EXPECTED_BOOK_TITLE_1)));
+        assertTrue(books.stream().anyMatch(book -> book.getTitle().equals(EXPECTED_BOOK_TITLE_2)));
     }
 }

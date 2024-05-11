@@ -29,6 +29,8 @@ public class CategoryServiceTest {
     private static final Long VALID_CATEGORY_ID = 1L;
     private static final int PAGE_SIZE = 10;
     private static final int PAGE_NUMBER = 0;
+    private static final String CATEGORY_NAME = "Horror";
+    private static final String CATEGORY_DESCRIPTION = "Scary";
 
     @InjectMocks
     private CategoryServiceImpl categoryService;
@@ -46,9 +48,7 @@ public class CategoryServiceTest {
     public void createCategory_ValidRequestDto_ReturnsCategoryDto() {
         // Given
         CreateCategoryRequestDto requestDto = new CreateCategoryRequestDto(
-                "Horror",
-                "Scary"
-        );
+                CATEGORY_NAME, CATEGORY_DESCRIPTION);
 
         Category category = new Category();
         category.setName(requestDto.name());
@@ -82,8 +82,8 @@ public class CategoryServiceTest {
         // Given
         Category category = new Category();
         category.setId(VALID_CATEGORY_ID);
-        category.setName("Horror");
-        category.setDescription("Scary");
+        category.setName(CATEGORY_NAME);
+        category.setDescription(CATEGORY_DESCRIPTION);
 
         CategoryDto categoryDto = new CategoryDto(
                 category.getId(),
@@ -115,11 +115,11 @@ public class CategoryServiceTest {
             Verify getById() method works
             """)
     public void getById_ValidId_ReturnsCategoryDto() {
-        // Given
+        // Given;
         Category category = new Category();
         category.setId(VALID_CATEGORY_ID);
-        category.setName("Horror");
-        category.setDescription("Scary");
+        category.setName(CATEGORY_NAME);
+        category.setDescription(CATEGORY_DESCRIPTION);
 
         CategoryDto expectedCategoryDto = new CategoryDto(
                 category.getId(),

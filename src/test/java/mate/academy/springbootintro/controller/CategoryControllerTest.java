@@ -37,10 +37,21 @@ import java.util.Optional;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CategoryControllerTest {
 
+    protected static MockMvc mockMvc;
     private static final Long CATEGORY_ID_1 = 1L;
     private static final Long CATEGORY_ID_2 = 2L;
-
-    protected static MockMvc mockMvc;
+    private static final String SPRING_DATASOURCE_URL =
+            "spring.datasource.url";
+    private static final String SPRING_DATASOURCE_USERNAME =
+            "spring.datasource.username";
+    private static final String SPRING_DATASOURCE_PASSWORD =
+            "spring.datasource.password";
+    private static final String SPRING_DATASOURCE_DRIVER_CLASS_NAME =
+            "spring.datasource.driver-class-name";
+    private static final String CATEGORY_NAME_1 = "Fiction";
+    private static final String CATEGORY_DESCRIPTION_1 = "Fiction books";
+    private static final String CATEGORY_NAME_2 = "Fantasy";
+    private static final String CATEGORY_DESCRIPTION_2 = "Fantasy books";
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -54,10 +65,10 @@ public class CategoryControllerTest {
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         CustomMySqlContainer mysqlContainer = CustomMySqlContainer.getInstance();
-        registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl);
-        registry.add("spring.datasource.username", mysqlContainer::getUsername);
-        registry.add("spring.datasource.password", mysqlContainer::getPassword);
-        registry.add("spring.datasource.driver-class-name", mysqlContainer::getDriverClassName);
+        registry.add(SPRING_DATASOURCE_URL, mysqlContainer::getJdbcUrl);
+        registry.add(SPRING_DATASOURCE_USERNAME, mysqlContainer::getUsername);
+        registry.add(SPRING_DATASOURCE_PASSWORD, mysqlContainer::getPassword);
+        registry.add(SPRING_DATASOURCE_DRIVER_CLASS_NAME, mysqlContainer::getDriverClassName);
     }
 
     @BeforeAll
@@ -87,8 +98,8 @@ public class CategoryControllerTest {
     void createCategory_ValidRequest_CreatesNewCategory() throws Exception {
         // Given
         CreateCategoryRequestDto requestDto = new CreateCategoryRequestDto(
-                "Horor",
-                "Scary"
+                CATEGORY_NAME_1,
+                CATEGORY_DESCRIPTION_1
         );
 
         CategoryDto expected = new CategoryDto(
@@ -127,14 +138,14 @@ public class CategoryControllerTest {
         // Given
         CategoryDto category1 = new CategoryDto(
                 CATEGORY_ID_1,
-                "Fiction",
-                "Fiction books"
+                CATEGORY_NAME_1,
+                CATEGORY_DESCRIPTION_1
         );
 
         CategoryDto category2 = new CategoryDto(
                 CATEGORY_ID_2,
-                "Fantasy",
-                "Fantasy books"
+                CATEGORY_NAME_2,
+                CATEGORY_DESCRIPTION_2
         );
 
         List<CategoryDto> expected = new ArrayList<>();
@@ -172,8 +183,8 @@ public class CategoryControllerTest {
         // Given
         CategoryDto expected = new CategoryDto(
                 CATEGORY_ID_1,
-                "Fiction",
-                "Fiction books"
+                CATEGORY_NAME_1,
+                CATEGORY_DESCRIPTION_1
         );
 
         // When
