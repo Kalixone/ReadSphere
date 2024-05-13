@@ -7,10 +7,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import mate.academy.springbootintro.dto.BookDto;
-import mate.academy.springbootintro.dto.BookDtoWithoutCategoryIds;
-import mate.academy.springbootintro.dto.CreateBookRequestDto;
-import mate.academy.springbootintro.dto.UpdateBookRequestDto;
+
+import mate.academy.springbootintro.dto.*;
 import mate.academy.springbootintro.mapper.BookMapper;
 import mate.academy.springbootintro.model.Book;
 import mate.academy.springbootintro.model.Category;
@@ -26,9 +24,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @ExtendWith(MockitoExtension.class)
@@ -70,15 +66,11 @@ public class BookServiceTest {
             """)
     public void createBook_ValidRequestDto_ReturnsBookDto() {
         // Given
-        Category category1 = new Category();
-        category1.setId(CATEGORY_ID_1);
-        category1.setName(CATEGORY_NAME_1);
-        category1.setDescription(CATEGORY_DESCRIPTION_1);
+        Category category1 = createCategory(
+                CATEGORY_ID_1, CATEGORY_NAME_1, CATEGORY_DESCRIPTION_1);
 
-        Category category2 = new Category();
-        category1.setId(CATEGORY_ID_2);
-        category1.setName(CATEGORY_NAME_2);
-        category1.setDescription(CATEGORY_DESCRIPTION_2);
+        Category category2 = createCategory(
+                CATEGORY_ID_2, CATEGORY_NAME_2, CATEGORY_DESCRIPTION_2);
 
         CreateBookRequestDto requestDto = new CreateBookRequestDto(
                 BOOK_TITLE, BOOK_AUTHOR,
@@ -86,24 +78,19 @@ public class BookServiceTest {
                 BOOK_DESCRIPTION, Set.of(category1, category2)
         );
 
-        Book book = new Book();
-        book.setTitle(requestDto.title());
-        book.setAuthor(requestDto.author());
-        book.setPrice(requestDto.price());
-        book.setCoverImage(requestDto.coverImage());
-        book.setDescription(requestDto.description());
-        book.setCategories(requestDto.categories());
+        Book book = createBook(
+                BOOK_ID, requestDto.title(), requestDto.author(),
+                null, requestDto.price(), requestDto.coverImage(),
+                requestDto.description(), requestDto.categories()
+        );
 
-        BookDto bookDto = new BookDto();
-        bookDto.setId(BOOK_ID);
-        bookDto.setTitle(book.getTitle());
-        bookDto.setAuthor(book.getAuthor());
-        bookDto.setPrice(book.getPrice());
-        bookDto.setCoverImage(book.getCoverImage());
-        bookDto.setDescription(book.getDescription());
-        bookDto.setCategoriesIds(book.getCategories().stream()
-                .map(Category::getId)
-                .collect(Collectors.toList()));
+        BookDto bookDto = createBookDto(
+                BOOK_ID, requestDto.title(), requestDto.author(),
+                null, requestDto.price(), requestDto.coverImage(),
+                requestDto.description(), requestDto.categories().stream()
+                        .map(Category::getId)
+                        .collect(Collectors.toList())
+        );
 
         when(bookMapper.toModel(requestDto)).thenReturn(book);
         when(bookRepository.save(book)).thenReturn(book);
@@ -125,37 +112,26 @@ public class BookServiceTest {
             """)
     public void getAll_ValidPageable_ReturnsAllBooks() {
         // Given
-        Category category1 = new Category();
-        category1.setId(CATEGORY_ID_1);
-        category1.setName(CATEGORY_NAME_1);
-        category1.setDescription(CATEGORY_DESCRIPTION_1);
+        Category category1 = createCategory(
+                CATEGORY_ID_1, CATEGORY_NAME_1, CATEGORY_DESCRIPTION_1);
 
-        Category category2 = new Category();
-        category2.setId(CATEGORY_ID_2);
-        category2.setName(CATEGORY_NAME_2);
-        category1.setDescription(CATEGORY_DESCRIPTION_2);
+        Category category2 = createCategory(
+                CATEGORY_ID_2, CATEGORY_NAME_2, CATEGORY_DESCRIPTION_2);
 
-        Book book = new Book();
-        book.setId(BOOK_ID);
-        book.setTitle(BOOK_TITLE);
-        book.setAuthor(BOOK_AUTHOR);
-        book.setIsbn(BOOK_ISBN);
-        book.setPrice(BOOK_PRICE);
-        book.setCoverImage(BOOK_COVER_IMAGE);
-        book.setDescription(BOOK_DESCRIPTION);
-        book.setCategories(Set.of(category1, category2));
+        Book book = createBook(
+                BOOK_ID, BOOK_TITLE,
+                BOOK_AUTHOR, BOOK_ISBN,
+                BOOK_PRICE, BOOK_COVER_IMAGE,
+                BOOK_DESCRIPTION, Set.of(category1, category2));
 
-        BookDto bookDto = new BookDto();
-        bookDto.setId(book.getId());
-        bookDto.setTitle(book.getTitle());
-        bookDto.setAuthor(book.getAuthor());
-        bookDto.setIsbn(book.getIsbn());
-        bookDto.setPrice(book.getPrice());
-        bookDto.setCoverImage(book.getCoverImage());
-        bookDto.setDescription(book.getDescription());
-        bookDto.setCategoriesIds(book.getCategories().stream()
-                .map(Category::getId)
-                .collect(Collectors.toList()));
+        BookDto bookDto = createBookDto(
+                BOOK_ID, BOOK_TITLE,
+                BOOK_AUTHOR, BOOK_ISBN,
+                BOOK_PRICE, BOOK_COVER_IMAGE,
+                BOOK_DESCRIPTION, book.getCategories().stream()
+                        .map(Category::getId)
+                        .collect(Collectors.toList())
+        );
 
         Pageable pageable = PageRequest.of(PAGE_NUMBER,PAGE_SIZE);
         List<Book> books = List.of(book);
@@ -182,38 +158,22 @@ public class BookServiceTest {
             """)
     public void getBookById_ValidId_ReturnsBookDto() {
         // Given
-        Category category1 = new Category();
-        category1.setId(CATEGORY_ID_1);
-        category1.setName(CATEGORY_NAME_1);
-        category1.setDescription(CATEGORY_DESCRIPTION_1);
+        Category category1 = createCategory(
+                CATEGORY_ID_1, CATEGORY_NAME_1, CATEGORY_DESCRIPTION_1);
 
-        Category category2 = new Category();
-        category2.setId(CATEGORY_ID_2);
-        category2.setName(CATEGORY_NAME_2);
-        category1.setDescription(CATEGORY_DESCRIPTION_2);
+        Category category2 = createCategory(
+                CATEGORY_ID_2, CATEGORY_NAME_2, CATEGORY_DESCRIPTION_2);
 
-        Book book = new Book();
-        book.setId(BOOK_ID);
-        book.setTitle(BOOK_TITLE);
-        book.setAuthor(BOOK_AUTHOR);
-        book.setIsbn(BOOK_ISBN);
-        book.setPrice(BOOK_PRICE);
-        book.setCoverImage(BOOK_COVER_IMAGE);
-        book.setDescription(BOOK_DESCRIPTION);
-        book.setCategories(Set.of(category1, category2));
+        Book book = createBook(
+                BOOK_ID, BOOK_TITLE,
+                BOOK_AUTHOR, BOOK_ISBN,
+                BOOK_PRICE, BOOK_COVER_IMAGE,
+                BOOK_DESCRIPTION, Set.of(category1, category2));
 
-        BookDto expectedBookDto = new BookDto();
-        expectedBookDto.setId(book.getId());
-        expectedBookDto.setTitle(book.getTitle());
-        expectedBookDto.setAuthor(book.getAuthor());
-        expectedBookDto.setIsbn(book.getIsbn());
-        expectedBookDto.setPrice(book.getPrice());
-        expectedBookDto.setCoverImage(book.getCoverImage());
-        expectedBookDto.setDescription(book.getDescription());
-        expectedBookDto.setCategoriesIds(
-                book.getCategories().stream()
-                        .map(Category::getId)
-                        .collect(Collectors.toList())
+        BookDto expectedBookDto = createBookDto(
+                BOOK_ID, BOOK_TITLE, BOOK_AUTHOR,
+                BOOK_ISBN, BOOK_PRICE, BOOK_COVER_IMAGE,
+                BOOK_DESCRIPTION, List.of(CATEGORY_ID_1, CATEGORY_ID_2)
         );
 
         when(bookRepository.findById(BOOK_ID)).thenReturn(Optional.of(book));
@@ -255,33 +215,24 @@ public class BookServiceTest {
                 UPDATED_BOOK_DESCRIPTION
         );
 
-        Book existingBook = new Book();
-        existingBook.setId(BOOK_ID);
-        existingBook.setTitle(BOOK_TITLE);
-        existingBook.setAuthor(BOOK_AUTHOR);
-        existingBook.setPrice(BOOK_PRICE);
-        existingBook.setCoverImage(BOOK_COVER_IMAGE);
-        existingBook.setDescription(BOOK_DESCRIPTION);
+        Book existingBook = createBook(
+                BOOK_ID, BOOK_TITLE, BOOK_AUTHOR,
+                null, BOOK_PRICE, BOOK_COVER_IMAGE,
+                BOOK_DESCRIPTION, null);
 
-        Book updatedBook = new Book();
-        updatedBook.setId(BOOK_ID);
-        updatedBook.setTitle(UPDATED_BOOK_TITLE);
-        updatedBook.setAuthor(UPDATED_BOOK_AUTHOR);
-        updatedBook.setPrice(UPDATED_BOOK_PRICE);
-        updatedBook.setCoverImage(UPDATED_BOOK_COVER_IMAGE);
-        updatedBook.setDescription(UPDATED_BOOK_DESCRIPTION);
+        Book updatedBook = createBook(
+                BOOK_ID, UPDATED_BOOK_TITLE, UPDATED_BOOK_AUTHOR,
+                null, UPDATED_BOOK_PRICE, UPDATED_BOOK_COVER_IMAGE,
+                UPDATED_BOOK_DESCRIPTION, null);
 
         when(bookRepository.findById(BOOK_ID)).thenReturn(Optional.of(existingBook));
         when(bookRepository.save(existingBook)).thenReturn(updatedBook);
 
-        BookDto expectedBookDto = new BookDto();
-        expectedBookDto.setId(BOOK_ID);
-        expectedBookDto.setTitle(UPDATED_BOOK_TITLE);
-        expectedBookDto.setAuthor(UPDATED_BOOK_AUTHOR);
-        expectedBookDto.setPrice(UPDATED_BOOK_PRICE);
-        expectedBookDto.setCoverImage(UPDATED_BOOK_COVER_IMAGE);
-        expectedBookDto.setDescription(UPDATED_BOOK_DESCRIPTION);
-        expectedBookDto.setCategoriesIds(List.of());
+        BookDto expectedBookDto = createBookDto(
+                BOOK_ID, UPDATED_BOOK_TITLE,
+                UPDATED_BOOK_AUTHOR, null, UPDATED_BOOK_PRICE,
+                UPDATED_BOOK_COVER_IMAGE, UPDATED_BOOK_DESCRIPTION,
+                List.of());
 
         when(bookMapper.toDto(updatedBook)).thenReturn(expectedBookDto);
 
@@ -308,19 +259,14 @@ public class BookServiceTest {
             """)
     public void findBooksByCategoryId_ValidId_ReturnsBookDtoWithoutCategoryIds() {
         // Given
-        Category category1 = new Category();
-        category1.setId(CATEGORY_ID_1);
-        category1.setName(CATEGORY_NAME_1);
-        category1.setDescription(CATEGORY_DESCRIPTION_1);
+        Category category1 = createCategory(
+                CATEGORY_ID_1, CATEGORY_NAME_1, CATEGORY_DESCRIPTION_1);
 
-        Book book = new Book();
-        book.setTitle(BOOK_TITLE);
-        book.setAuthor(BOOK_AUTHOR);
-        book.setIsbn(BOOK_ISBN);
-        book.setPrice(BOOK_PRICE);
-        book.setCoverImage(BOOK_COVER_IMAGE);
-        book.setDescription(BOOK_DESCRIPTION);
-        book.setCategories(Set.of(category1));
+        Book book = createBook(
+                BOOK_ID, BOOK_TITLE,
+                BOOK_AUTHOR, BOOK_ISBN,
+                BOOK_PRICE, BOOK_COVER_IMAGE,
+                BOOK_DESCRIPTION, Set.of(category1));
 
         // When
         when(bookRepository.findAllByCategoryId(CATEGORY_ID_1)).thenReturn(List.of(book));
@@ -333,5 +279,48 @@ public class BookServiceTest {
         BookDtoWithoutCategoryIds expectedBookDto = bookMapper.toDtoWithoutCategories(book);
 
         assertEquals(expectedBookDto, bookDtos.get(0));
+    }
+
+    private Category createCategory(
+            Long id, String name,
+            String description) {
+        Category category = new Category();
+        category.setId(id);
+        category.setName(name);
+        category.setDescription(description);
+        return category;
+    }
+
+    private Book createBook(
+            Long id, String title,
+            String author, String isbn,
+            BigDecimal price, String coverImage,
+            String description, Set<Category> categories) {
+        Book book = new Book();
+        book.setId(id);
+        book.setTitle(title);
+        book.setAuthor(author);
+        book.setIsbn(isbn);
+        book.setPrice(price);
+        book.setCoverImage(coverImage);
+        book.setDescription(description);
+        book.setCategories(categories);
+        return book;
+    }
+
+    private BookDto createBookDto(
+            Long id, String title,
+            String author, String isbn,
+            BigDecimal price, String coverImage,
+            String description, List<Long> categoriesIds) {
+        BookDto bookDto = new BookDto();
+        bookDto.setId(id);
+        bookDto.setTitle(title);
+        bookDto.setAuthor(author);
+        bookDto.setPrice(price);
+        bookDto.setCoverImage(coverImage);
+        bookDto.setDescription(description);
+        bookDto.setCategoriesIds(categoriesIds != null ? new ArrayList<>(categoriesIds) : Collections.emptyList());
+        return bookDto;
     }
 }

@@ -102,11 +102,8 @@ public class CategoryControllerTest {
                 CATEGORY_DESCRIPTION_1
         );
 
-        CategoryDto expected = new CategoryDto(
-                CATEGORY_ID_1,
-                requestDto.name(),
-                requestDto.description()
-        );
+        CategoryDto expected = createCategoryDto(
+                CATEGORY_ID_1, requestDto.name(), requestDto.description());
 
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
 
@@ -130,23 +127,20 @@ public class CategoryControllerTest {
     @DisplayName("""
             Get all categories
             """)
-    @Sql(scripts = "classpath:database/categories/add-2-categories-to-categories-table.sql",
+    @Sql(scripts = {
+            "classpath:database/categories/delete-categories-from-categories-table.sql",
+            "classpath:database/categories/add-2-categories-to-categories-table.sql"
+    },
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "classpath:database/categories/delete-categories-from-categories-table.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void getAll_Categories_ReturnsAllCategories() throws Exception {
         // Given
-        CategoryDto category1 = new CategoryDto(
-                CATEGORY_ID_1,
-                CATEGORY_NAME_1,
-                CATEGORY_DESCRIPTION_1
-        );
+        CategoryDto category1 = createCategoryDto(
+                CATEGORY_ID_1, CATEGORY_NAME_1, CATEGORY_DESCRIPTION_1);
 
-        CategoryDto category2 = new CategoryDto(
-                CATEGORY_ID_2,
-                CATEGORY_NAME_2,
-                CATEGORY_DESCRIPTION_2
-        );
+        CategoryDto category2 = createCategoryDto(
+                CATEGORY_ID_2, CATEGORY_NAME_2, CATEGORY_DESCRIPTION_2);
 
         List<CategoryDto> expected = new ArrayList<>();
         expected.add(category1);
@@ -181,11 +175,8 @@ public class CategoryControllerTest {
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void getCategoryById_ValidId_ReturnsCategoryDto() throws Exception {
         // Given
-        CategoryDto expected = new CategoryDto(
-                CATEGORY_ID_1,
-                CATEGORY_NAME_1,
-                CATEGORY_DESCRIPTION_1
-        );
+        CategoryDto expected = createCategoryDto(
+                CATEGORY_ID_1, CATEGORY_NAME_1, CATEGORY_DESCRIPTION_1);
 
         // When
         MvcResult result = mockMvc.perform(
@@ -223,5 +214,11 @@ public class CategoryControllerTest {
         // Then
         Optional<Category> deletedCategory = categoryRepository.findById(CATEGORY_ID_1);
         Assertions.assertFalse(deletedCategory.isPresent());
+    }
+
+    private CategoryDto createCategoryDto(
+            Long id, String name,
+            String description) {
+        return new CategoryDto(id, name, description);
     }
 }

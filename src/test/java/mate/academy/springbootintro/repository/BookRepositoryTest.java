@@ -24,7 +24,7 @@ public class BookRepositoryTest {
 
     private static final Long CATEGORY_ID = 2L;
     private static final String EXPECTED_BOOK_TITLE_1 = "Harry Potter";
-    private static final String EXPECTED_BOOK_TITLE_2 = "Gra o Tron";
+    private static final String EXPECTED_BOOK_TITLE_2 = "Game of thrones";
     private static final String SPRING_DATASOURCE_URL =
             "spring.datasource.url";
     private static final String SPRING_DATASOURCE_USERNAME =

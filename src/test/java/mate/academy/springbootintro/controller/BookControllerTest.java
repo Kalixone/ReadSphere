@@ -62,12 +62,8 @@ public class BookControllerTest {
     private static final String BOOK_COVER_IMAGE_1 = "https://randomImage1.jpg";
     private static final String BOOK_DESCRIPTION_1 = "great book";
     private static final BigDecimal BOOK_PRICE_1 = BigDecimal.TEN;
-    private static final String BOOK_TITLE_2 = "Harry Potter";
-    private static final String BOOK_AUTHOR_2 = "Rowling";
-    private static final String BOOK_ISBN_2 = "123456789";
     private static final BigDecimal BOOK_PRICE_2 = BigDecimal.valueOf(19.99);
-    private static final String BOOK_COVER_IMAGE_2 = "https://randomImage1.jpg";
-    private static final String BOOK_DESCRIPTION_2 = "great book";
+    private static final String BOOK_ISBN_1 = "123456789";
     private static final String BOOK_SEARCH_TITLE = "Harry Potter";
     private static final String BOOK_SEARCH_AUTHOR = "Rowling";
 
@@ -129,9 +125,8 @@ public class BookControllerTest {
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void createBook_ValidRequestDto_CreatesNewBook() throws Exception {
         // Given
-        Category category = new Category();
-        category.setName(CATEGORY_NAME);
-        category.setDescription(CATEGORY_DESCRIPTION);
+        Category category = createCategory(
+                CATEGORY_NAME, CATEGORY_DESCRIPTION);
 
         categoryRepository.save(category);
 
@@ -219,25 +214,17 @@ public class BookControllerTest {
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void getBookById_ValidId_ReturnsBookDto() throws Exception {
         // Given
-        BookDto bookDto = new BookDto();
-        bookDto.setId(BOOK_ID_1);
-        bookDto.setTitle(BOOK_TITLE_2);
-        bookDto.setAuthor(BOOK_AUTHOR_2);
-        bookDto.setIsbn(BOOK_ISBN_2);
-        bookDto.setPrice(BOOK_PRICE_2);
-        bookDto.setCoverImage(BOOK_COVER_IMAGE_2);
-        bookDto.setDescription(BOOK_DESCRIPTION_2);
-        bookDto.setCategoriesIds(Collections.emptyList());
+        BookDto bookDto = createBookDto(
+                BOOK_ID_1, BOOK_TITLE_1,
+                BOOK_AUTHOR_1, BOOK_ISBN_1,
+                BOOK_PRICE_1, BOOK_COVER_IMAGE_1,
+                BOOK_DESCRIPTION_1, Collections.emptyList());
 
-        BookDto expected = new BookDto();
-        expected.setId(bookDto.getId());
-        expected.setTitle(bookDto.getTitle());
-        expected.setAuthor(bookDto.getAuthor());
-        expected.setIsbn(bookDto.getIsbn());
-        expected.setPrice(bookDto.getPrice());
-        expected.setCoverImage(bookDto.getCoverImage());
-        expected.setDescription(bookDto.getDescription());
-        expected.setCategoriesIds(bookDto.getCategoriesIds());
+        BookDto expected = createBookDto(
+                bookDto.getId(), bookDto.getTitle(),
+                bookDto.getAuthor(), bookDto.getIsbn(),
+                bookDto.getPrice(), bookDto.getCoverImage(),
+                bookDto.getDescription(), bookDto.getCategoriesIds());
 
         // When
         MvcResult result = mockMvc.perform(
@@ -299,15 +286,11 @@ public class BookControllerTest {
     void searchBooksByParameters_ValidQuery_ReturnsExpectedResults() throws Exception {
         // Given
         List<BookDto> expected = new ArrayList<>();
-        BookDto expectedBook = new BookDto();
-        expectedBook.setId(BOOK_ID_1);
-        expectedBook.setTitle(BOOK_SEARCH_TITLE);
-        expectedBook.setAuthor(BOOK_SEARCH_AUTHOR);
-        expectedBook.setIsbn(BOOK_ISBN_2);
-        expectedBook.setPrice(BOOK_PRICE_2);
-        expectedBook.setDescription(BOOK_DESCRIPTION_2);
-        expectedBook.setCoverImage(BOOK_COVER_IMAGE_2);
-        expectedBook.setCategoriesIds(Collections.emptyList());
+        BookDto expectedBook = createBookDto(
+                BOOK_ID_1, BOOK_SEARCH_TITLE,
+                BOOK_SEARCH_AUTHOR, BOOK_ISBN_1,
+                BOOK_PRICE_2, BOOK_COVER_IMAGE_1,
+                BOOK_DESCRIPTION_1, Collections.emptyList());
         expected.add(expectedBook);
 
         // When
@@ -343,13 +326,21 @@ public class BookControllerTest {
         return bookDto;
     }
 
+    private Category createCategory(
+            String name, String description) {
+        Category category = new Category();
+        category.setName(name);
+        category.setDescription(description);
+        return category;
+    }
+
     private List<BookDto> prepareExpectedBooks() {
         List<BookDto> expected = new ArrayList<>();
         expected.add(createBookDto(BOOK_ID_1, "Harry Potter", "Rowling", "123456789",
                 BigDecimal.valueOf(19.99), "https://randomImage1.jpg", "great book", Collections.emptyList()));
-        expected.add(createBookDto(BOOK_ID_2, "Władca Pierścieni", "Tolkien", "987654321",
+        expected.add(createBookDto(BOOK_ID_2, "Lord of the rings", "Tolkien", "987654321",
                 BigDecimal.valueOf(25.99), "https://randomImage2.jpg", "great book", Collections.emptyList()));
-        expected.add(createBookDto(BOOK_ID_3, "Gra o Tron", "Martin", "555666777",
+        expected.add(createBookDto(BOOK_ID_3, "Game of thrones", "Martin", "555666777",
                 BigDecimal.valueOf(29.99), "https://randomImage3.jpg", "great book", Collections.emptyList()));
         return expected;
     }

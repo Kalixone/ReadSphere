@@ -80,10 +80,8 @@ public class CategoryServiceTest {
             """)
     public void findAll_ValidPageable_ReturnsAllCategories() {
         // Given
-        Category category = new Category();
-        category.setId(VALID_CATEGORY_ID);
-        category.setName(CATEGORY_NAME);
-        category.setDescription(CATEGORY_DESCRIPTION);
+        Category category = createCategory(
+                VALID_CATEGORY_ID, CATEGORY_NAME, CATEGORY_DESCRIPTION);
 
         CategoryDto categoryDto = new CategoryDto(
                 category.getId(),
@@ -116,10 +114,8 @@ public class CategoryServiceTest {
             """)
     public void getById_ValidId_ReturnsCategoryDto() {
         // Given;
-        Category category = new Category();
-        category.setId(VALID_CATEGORY_ID);
-        category.setName(CATEGORY_NAME);
-        category.setDescription(CATEGORY_DESCRIPTION);
+        Category category = createCategory(
+                VALID_CATEGORY_ID, CATEGORY_NAME, CATEGORY_DESCRIPTION);
 
         CategoryDto expectedCategoryDto = new CategoryDto(
                 category.getId(),
@@ -153,5 +149,15 @@ public class CategoryServiceTest {
         // Then
         verify(categoryRepository, times(1)).deleteById(VALID_CATEGORY_ID);
         verifyNoMoreInteractions(categoryRepository);
+    }
+
+    private Category createCategory(
+            Long id, String name,
+            String description) {
+        Category category = new Category();
+        category.setId(id);
+        category.setName(name);
+        category.setDescription(description);
+        return category;
     }
 }
