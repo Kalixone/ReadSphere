@@ -7,8 +7,10 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import mate.academy.springbootintro.dto.*;
+import mate.academy.springbootintro.dto.BookDto;
+import mate.academy.springbootintro.dto.CreateBookRequestDto;
+import mate.academy.springbootintro.dto.BookDtoWithoutCategoryIds;
+import mate.academy.springbootintro.dto.UpdateBookRequestDto;
 import mate.academy.springbootintro.mapper.BookMapper;
 import mate.academy.springbootintro.model.Book;
 import mate.academy.springbootintro.model.Category;
@@ -24,7 +26,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ExtendWith(MockitoExtension.class)
@@ -320,7 +326,8 @@ public class BookServiceTest {
         bookDto.setPrice(price);
         bookDto.setCoverImage(coverImage);
         bookDto.setDescription(description);
-        bookDto.setCategoriesIds(categoriesIds != null ? new ArrayList<>(categoriesIds) : Collections.emptyList());
+        bookDto.setCategoriesIds
+                (categoriesIds != null ? new ArrayList<>(categoriesIds) : Collections.emptyList());
         return bookDto;
     }
 }

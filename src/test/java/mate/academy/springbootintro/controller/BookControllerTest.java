@@ -268,7 +268,6 @@ public class BookControllerTest {
         // Then
         Optional<Book> deletedBook = bookRepository.findById(BOOK_ID_1);
         Assertions.assertFalse(deletedBook.isPresent());
-
     }
 
     @Test
