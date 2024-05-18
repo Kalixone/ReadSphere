@@ -6,29 +6,30 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import mate.academy.springbootintro.config.CustomMySqlContainer;
+import javax.sql.DataSource;
+import lombok.SneakyThrows;
 import mate.academy.springbootintro.dto.CategoryDto;
 import mate.academy.springbootintro.dto.CreateCategoryRequestDto;
 import mate.academy.springbootintro.model.Category;
 import mate.academy.springbootintro.repository.category.CategoryRepository;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,21 +41,10 @@ public class CategoryControllerTest {
     protected static MockMvc mockMvc;
     private static final Long CATEGORY_ID_1 = 1L;
     private static final Long CATEGORY_ID_2 = 2L;
-    private static final String SPRING_DATASOURCE_URL =
-            "spring.datasource.url";
-    private static final String SPRING_DATASOURCE_USERNAME =
-            "spring.datasource.username";
-    private static final String SPRING_DATASOURCE_PASSWORD =
-            "spring.datasource.password";
-    private static final String SPRING_DATASOURCE_DRIVER_CLASS_NAME =
-            "spring.datasource.driver-class-name";
     private static final String CATEGORY_NAME_1 = "Fiction";
     private static final String CATEGORY_DESCRIPTION_1 = "Fiction books";
     private static final String CATEGORY_NAME_2 = "Fantasy";
     private static final String CATEGORY_DESCRIPTION_2 = "Fantasy books";
-
-    @Autowired
-    private WebApplicationContext webApplicationContext;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -62,30 +52,42 @@ public class CategoryControllerTest {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        CustomMySqlContainer mysqlContainer = CustomMySqlContainer.getInstance();
-        registry.add(SPRING_DATASOURCE_URL, mysqlContainer::getJdbcUrl);
-        registry.add(SPRING_DATASOURCE_USERNAME, mysqlContainer::getUsername);
-        registry.add(SPRING_DATASOURCE_PASSWORD, mysqlContainer::getPassword);
-        registry.add(SPRING_DATASOURCE_DRIVER_CLASS_NAME, mysqlContainer::getDriverClassName);
-    }
-
-    @BeforeAll
-    static void beforeAll() {
-        CustomMySqlContainer.getInstance().start();
+    @BeforeEach
+    void beforeEach(
+            @Autowired DataSource dataSource,
+            @Autowired WebApplicationContext webApplicationContext) throws SQLException {
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
+                .build();
+        teardown(dataSource);
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(true);
+            ScriptUtils.executeSqlScript(
+                    connection,
+                    new ClassPathResource("database/categories/" +
+                            "add-2-categories-to-categories-table.sql")
+            );
+        }
     }
 
     @AfterAll
-    static void afterAll() {
-        CustomMySqlContainer.getInstance().stop();
+    static void afterAll(
+            @Autowired DataSource dataSource
+    ) {
+        teardown(dataSource);
     }
 
-    @BeforeEach
-    public void setup() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-                .apply(springSecurity())
-                .build();
+    @SneakyThrows
+    static void teardown(DataSource dataSource) {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(true);
+            ScriptUtils.executeSqlScript(
+                    connection,
+                    new ClassPathResource("database/categories/" +
+                            "delete-categories-from-categories-table.sql")
+            );
+        }
     }
 
     @Test
@@ -93,9 +95,7 @@ public class CategoryControllerTest {
     @DisplayName("""
             Create a new category
             """)
-    @Sql(scripts = "classpath:database/categories/delete-categories-from-categories-table.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void createCategory_ValidRequest_CreatesNewCategory() throws Exception {
+    public void createCategory_ValidRequest_CreatesNewCategory() throws Exception {
         // Given
         CreateCategoryRequestDto requestDto = new CreateCategoryRequestDto(
                 CATEGORY_NAME_1,
@@ -127,14 +127,7 @@ public class CategoryControllerTest {
     @DisplayName("""
             Get all categories
             """)
-    @Sql(scripts = {
-            "classpath:database/categories/delete-categories-from-categories-table.sql",
-            "classpath:database/categories/add-2-categories-to-categories-table.sql"
-    },
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:database/categories/delete-categories-from-categories-table.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void getAll_Categories_ReturnsAllCategories() throws Exception {
+    public void getAll_Categories_ReturnsAllCategories() throws Exception {
         // Given
         CategoryDto category1 = createCategoryDto(
                 CATEGORY_ID_1, CATEGORY_NAME_1, CATEGORY_DESCRIPTION_1);
@@ -166,14 +159,7 @@ public class CategoryControllerTest {
     @DisplayName("""
             Get category by ID
             """)
-    @Sql(scripts = {
-            "classpath:database/categories/delete-categories-from-categories-table.sql",
-            "classpath:database/categories/add-2-categories-to-categories-table.sql"
-    },
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:database/categories/delete-categories-from-categories-table.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void getCategoryById_ValidId_ReturnsCategoryDto() throws Exception {
+    public void getCategoryById_ValidId_ReturnsCategoryDto() throws Exception {
         // Given
         CategoryDto expected = createCategoryDto(
                 CATEGORY_ID_1, CATEGORY_NAME_1, CATEGORY_DESCRIPTION_1);
@@ -196,11 +182,7 @@ public class CategoryControllerTest {
     @DisplayName("""
             Delete category by ID
             """)
-    @Sql(scripts = "classpath:database/categories/add-2-categories-to-categories-table.sql",
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:database/categories/delete-categories-from-categories-table.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void deleteCategory_ValidId_DeletesCategory() throws Exception {
+    public void deleteCategory_ValidId_DeletesCategory() throws Exception {
         // Given
         categoryRepository.findById(CATEGORY_ID_1);
 

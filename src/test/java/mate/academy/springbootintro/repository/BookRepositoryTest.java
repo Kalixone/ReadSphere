@@ -3,18 +3,13 @@ package mate.academy.springbootintro.repository;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import mate.academy.springbootintro.config.CustomMySqlContainer;
 import mate.academy.springbootintro.repository.book.BookRepository;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import mate.academy.springbootintro.model.Book;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import java.util.List;
 
@@ -25,36 +20,8 @@ public class BookRepositoryTest {
     private static final Long CATEGORY_ID = 2L;
     private static final String EXPECTED_BOOK_TITLE_1 = "Harry Potter";
     private static final String EXPECTED_BOOK_TITLE_2 = "Game of thrones";
-    private static final String SPRING_DATASOURCE_URL =
-            "spring.datasource.url";
-    private static final String SPRING_DATASOURCE_USERNAME =
-            "spring.datasource.username";
-    private static final String SPRING_DATASOURCE_PASSWORD =
-            "spring.datasource.password";
-    private static final String SPRING_DATASOURCE_DRIVER_CLASS_NAME =
-            "spring.datasource.driver-class-name";
     @Autowired
     private BookRepository bookRepository;
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        CustomMySqlContainer mysqlContainer = CustomMySqlContainer.getInstance();
-        registry.add(SPRING_DATASOURCE_URL, mysqlContainer::getJdbcUrl);
-        registry.add(SPRING_DATASOURCE_USERNAME, mysqlContainer::getUsername);
-        registry.add(SPRING_DATASOURCE_PASSWORD, mysqlContainer::getPassword);
-        registry.add(SPRING_DATASOURCE_DRIVER_CLASS_NAME, mysqlContainer::getDriverClassName);
-    }
-
-    @BeforeAll
-    static void beforeAll() {
-        CustomMySqlContainer.getInstance().start();
-
-    }
-
-    @AfterAll
-    static void afterAll() {
-        CustomMySqlContainer.getInstance().stop();
-    }
 
     @Test
     @DisplayName("""

@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import mate.academy.springbootintro.config.CustomMySqlContainer;
+import lombok.SneakyThrows;
 import mate.academy.springbootintro.dto.BookDto;
 import mate.academy.springbootintro.dto.CreateBookRequestDto;
 import mate.academy.springbootintro.model.Book;
@@ -14,15 +14,17 @@ import mate.academy.springbootintro.model.Category;
 import mate.academy.springbootintro.repository.book.BookRepository;
 import mate.academy.springbootintro.repository.category.CategoryRepository;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,15 +32,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder;
+import javax.sql.DataSource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BookControllerTest {
@@ -47,14 +48,6 @@ public class BookControllerTest {
     private static final Long BOOK_ID_1 = 1L;
     private static final Long BOOK_ID_2 = 2L;
     private static final Long BOOK_ID_3 = 3L;
-    private static final String SPRING_DATASOURCE_URL =
-            "spring.datasource.url";
-    private static final String SPRING_DATASOURCE_USERNAME =
-            "spring.datasource.username";
-    private static final String SPRING_DATASOURCE_PASSWORD =
-            "spring.datasource.password";
-    private static final String SPRING_DATASOURCE_DRIVER_CLASS_NAME =
-            "spring.datasource.driver-class-name";
     private static final String CATEGORY_NAME = "magic";
     private static final String CATEGORY_DESCRIPTION = "dragons";
     private static final String BOOK_TITLE_1 = "Rekrut";
@@ -68,9 +61,6 @@ public class BookControllerTest {
     private static final String BOOK_SEARCH_AUTHOR = "Rowling";
 
     @Autowired
-    private WebApplicationContext webApplicationContext;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -79,30 +69,51 @@ public class BookControllerTest {
     @Autowired
     private BookRepository bookRepository;
 
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        CustomMySqlContainer mysqlContainer = CustomMySqlContainer.getInstance();
-        registry.add(SPRING_DATASOURCE_URL, mysqlContainer::getJdbcUrl);
-        registry.add(SPRING_DATASOURCE_USERNAME, mysqlContainer::getUsername);
-        registry.add(SPRING_DATASOURCE_PASSWORD, mysqlContainer::getPassword);
-        registry.add(SPRING_DATASOURCE_DRIVER_CLASS_NAME, mysqlContainer::getDriverClassName);
-    }
-
-    @BeforeAll
-    static void beforeAll() {
-        CustomMySqlContainer.getInstance().start();
+    @BeforeEach
+    void beforeEach(
+            @Autowired DataSource dataSource,
+            @Autowired WebApplicationContext webApplicationContext) throws SQLException {
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
+                .build();
+        teardown(dataSource);
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(true);
+            ScriptUtils.executeSqlScript(
+                    connection,
+                    new ClassPathResource("database/books/add-3-books-to-books-table.sql")
+            );
+        }
     }
 
     @AfterAll
-    static void afterAll() {
-        CustomMySqlContainer.getInstance().stop();
+    static void afterAll(
+            @Autowired DataSource dataSource
+    ) {
+        teardown(dataSource);
     }
 
-    @BeforeEach
-    public void setup() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-                .apply(springSecurity())
-                .build();
+    @SneakyThrows
+    static void teardown(DataSource dataSource) {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(true);
+            ScriptUtils.executeSqlScript(
+                    connection,
+                    new ClassPathResource("database/books_categories/" +
+                            "delete-book_id-and_category_id-from-books_categories-table.sql")
+            );
+            ScriptUtils.executeSqlScript(
+                    connection,
+                    new ClassPathResource("database/books/" +
+                            "delete-books-from-books-table.sql")
+            );
+            ScriptUtils.executeSqlScript(
+                    connection,
+                    new ClassPathResource("database/categories/" +
+                            "delete-categories-from-categories-table.sql")
+            );
+        }
     }
 
     @Test
@@ -110,20 +121,7 @@ public class BookControllerTest {
     @DisplayName("""
             Create a new book
             """)
-    @Sql(scripts = {
-            "classpath:database/books/delete-books-from-books-table.sql",
-            "classpath:database/books/add-3-books-to-books-table.sql"
-    },
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {
-            "classpath:database/books_categories/" +
-                    "delete-book_id-and_category_id-from-books_categories-table.sql",
-            "classpath:database/books/delete-books-from-books-table.sql",
-            "classpath:database/categories/delete-categories-from-categories-table.sql"
-
-    },
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void createBook_ValidRequestDto_CreatesNewBook() throws Exception {
+    public void createBook_ValidRequestDto_CreatesNewBook() throws Exception {
         // Given
         Category category = createCategory(
                 CATEGORY_NAME, CATEGORY_DESCRIPTION);
@@ -174,14 +172,7 @@ public class BookControllerTest {
     @DisplayName("""
             Get all books
             """)
-    @Sql(scripts = {
-            "classpath:database/books/delete-books-from-books-table.sql",
-            "classpath:database/books/add-3-books-to-books-table.sql"
-    },
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:database/books/delete-books-from-books-table.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void getAll_ValidRequest_ReturnsAllBooks() throws Exception {
+    public void getAll_ValidRequest_ReturnsAllBooks() throws Exception {
         // Given
         List<BookDto> expected = prepareExpectedBooks();
 
@@ -205,14 +196,7 @@ public class BookControllerTest {
     @DisplayName("""
             Get book by ID
             """)
-    @Sql(scripts = {
-            "classpath:database/books/delete-books-from-books-table.sql",
-            "classpath:database/books/add-3-books-to-books-table.sql"
-    },
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:database/books/delete-books-from-books-table.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void getBookById_ValidId_ReturnsBookDto() throws Exception {
+    public void getBookById_ValidId_ReturnsBookDto() throws Exception {
         // Given
         BookDto bookDto = createBookDto(
                 BOOK_ID_1, BOOK_TITLE_1,
@@ -247,14 +231,7 @@ public class BookControllerTest {
     @DisplayName("""
             Delete book by ID
             """)
-    @Sql(scripts = {
-            "classpath:database/books/delete-books-from-books-table.sql",
-            "classpath:database/books/add-3-books-to-books-table.sql"
-    },
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:database/books/delete-books-from-books-table.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void deleteBookById_ValidId_DeletesBook() throws Exception {
+    public void deleteBookById_ValidId_DeletesBook() throws Exception {
         // Given
         bookRepository.findById(BOOK_ID_1);
 
@@ -275,14 +252,7 @@ public class BookControllerTest {
     @DisplayName("""
             Search books with valid query parameters
             """)
-    @Sql(scripts = {
-            "classpath:database/books/delete-books-from-books-table.sql",
-            "classpath:database/books/add-3-books-to-books-table.sql"
-    },
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:database/books/delete-books-from-books-table.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void searchBooksByParameters_ValidQuery_ReturnsExpectedResults() throws Exception {
+    public void searchBooksByParameters_ValidQuery_ReturnsExpectedResults() throws Exception {
         // Given
         List<BookDto> expected = new ArrayList<>();
         BookDto expectedBook = createBookDto(

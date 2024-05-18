@@ -36,6 +36,12 @@ databaseChangeLog:
               - column:
                   name: shipping_address
                   type: VARCHAR(255)
+              - column:
+                  name: is_deleted
+                  type: BOOLEAN
+                  defaultValue: false
+                  constraints:
+                    nullable: false
             remarks: 'Table for storing user information.'
 
         - createTable:
