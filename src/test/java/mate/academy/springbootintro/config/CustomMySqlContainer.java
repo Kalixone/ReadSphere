@@ -7,7 +7,7 @@ public class CustomMySqlContainer extends MySQLContainer<CustomMySqlContainer> {
 
     private static CustomMySqlContainer mySqlContainer;
 
-    public CustomMySqlContainer() {
+    private CustomMySqlContainer() {
         super(DB_IMAGE);
     }
 
@@ -28,6 +28,5 @@ public class CustomMySqlContainer extends MySQLContainer<CustomMySqlContainer> {
 
     @Override
     public void stop() {
-        super.stop();
     }
 }

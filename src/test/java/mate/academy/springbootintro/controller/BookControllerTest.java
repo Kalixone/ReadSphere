@@ -14,10 +14,10 @@ import mate.academy.springbootintro.model.Category;
 import mate.academy.springbootintro.repository.book.BookRepository;
 import mate.academy.springbootintro.repository.category.CategoryRepository;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -69,8 +70,8 @@ public class BookControllerTest {
     @Autowired
     private BookRepository bookRepository;
 
-    @BeforeEach
-    void beforeEach(
+    @BeforeAll
+    static void beforeAll(
             @Autowired DataSource dataSource,
             @Autowired WebApplicationContext webApplicationContext) throws SQLException {
         mockMvc = MockMvcBuilders
@@ -78,13 +79,6 @@ public class BookControllerTest {
                 .apply(springSecurity())
                 .build();
         teardown(dataSource);
-        try (Connection connection = dataSource.getConnection()) {
-            connection.setAutoCommit(true);
-            ScriptUtils.executeSqlScript(
-                    connection,
-                    new ClassPathResource("database/books/add-3-books-to-books-table.sql")
-            );
-        }
     }
 
     @AfterAll
@@ -105,13 +99,12 @@ public class BookControllerTest {
             );
             ScriptUtils.executeSqlScript(
                     connection,
-                    new ClassPathResource("database/books/" +
-                            "delete-books-from-books-table.sql")
+                    new ClassPathResource("database/categories/" +
+                            "delete-categories-from-categories-table.sql")
             );
             ScriptUtils.executeSqlScript(
                     connection,
-                    new ClassPathResource("database/categories/" +
-                            "delete-categories-from-categories-table.sql")
+                    new ClassPathResource("database/books/delete-books-from-books-table.sql")
             );
         }
     }
@@ -121,7 +114,7 @@ public class BookControllerTest {
     @DisplayName("""
             Create a new book
             """)
-    public void createBook_ValidRequestDto_CreatesNewBook() throws Exception {
+    void createBook_ValidRequestDto_CreatesNewBook() throws Exception {
         // Given
         Category category = createCategory(
                 CATEGORY_NAME, CATEGORY_DESCRIPTION);
@@ -172,7 +165,14 @@ public class BookControllerTest {
     @DisplayName("""
             Get all books
             """)
-    public void getAll_ValidRequest_ReturnsAllBooks() throws Exception {
+    @Sql(scripts = {
+            "classpath:database/books_categories/" +
+                    "delete-book_id-and_category_id-from-books_categories-table.sql",
+            "classpath:database/books/delete-books-from-books-table.sql",
+            "classpath:database/books/add-3-books-to-books-table.sql"
+    },
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    void getAll_ValidRequest_ReturnsAllBooks() throws Exception {
         // Given
         List<BookDto> expected = prepareExpectedBooks();
 
@@ -196,7 +196,7 @@ public class BookControllerTest {
     @DisplayName("""
             Get book by ID
             """)
-    public void getBookById_ValidId_ReturnsBookDto() throws Exception {
+    void getBookById_ValidId_ReturnsBookDto() throws Exception {
         // Given
         BookDto bookDto = createBookDto(
                 BOOK_ID_1, BOOK_TITLE_1,
@@ -231,19 +231,19 @@ public class BookControllerTest {
     @DisplayName("""
             Delete book by ID
             """)
-    public void deleteBookById_ValidId_DeletesBook() throws Exception {
+    void deleteBookById_ValidId_DeletesBook() throws Exception {
         // Given
-        bookRepository.findById(BOOK_ID_1);
+        bookRepository.findById(BOOK_ID_3);
 
         // When
         mockMvc.perform(
-                delete("/api/books/{id}", BOOK_ID_1)
+                delete("/api/books/{id}", BOOK_ID_3)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent())
                 .andReturn();
 
         // Then
-        Optional<Book> deletedBook = bookRepository.findById(BOOK_ID_1);
+        Optional<Book> deletedBook = bookRepository.findById(BOOK_ID_3);
         Assertions.assertFalse(deletedBook.isPresent());
     }
 
@@ -252,7 +252,9 @@ public class BookControllerTest {
     @DisplayName("""
             Search books with valid query parameters
             """)
-    public void searchBooksByParameters_ValidQuery_ReturnsExpectedResults() throws Exception {
+    @Sql(scripts = "classpath:database/books/add-3-books-to-books-table.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    void searchBooksByParameters_ValidQuery_ReturnsExpectedResults() throws Exception {
         // Given
         List<BookDto> expected = new ArrayList<>();
         BookDto expectedBook = createBookDto(

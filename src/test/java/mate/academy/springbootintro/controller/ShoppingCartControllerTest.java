@@ -1,8 +1,6 @@
 package mate.academy.springbootintro.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -105,18 +103,19 @@ public class ShoppingCartControllerTest {
     @DisplayName("""
             Add Item to Cart
             """)
-    public void addToCart_ValidRequestDto_AddsItemToCartSuccessfully() throws Exception {
+    void addToCart_ValidRequestDto_AddsItemToCartSuccessfully() throws Exception {
         // Given
         AddBookToCartRequest request = new AddBookToCartRequest(BOOK_ID, QUANTITY);
         String jsonRequest = objectMapper.writeValueAsString(request);
 
         CartItemDto expectedCartItem =
-                new CartItemDto(CART_ITEM_DTO_ID, BOOK_ID, BOOK_TITLE, QUANTITY);
+                createCartItemDto(CART_ITEM_DTO_ID, BOOK_ID, BOOK_TITLE, QUANTITY);
+
         Set<CartItemDto> expectedCartItems = new HashSet<>();
         expectedCartItems.add(expectedCartItem);
 
         ShoppingCartDto expected =
-                new ShoppingCartDto(SHOPPING_CART_DTO_ID, USER_ID, expectedCartItems);
+                createShoppingCartDto(SHOPPING_CART_DTO_ID, USER_ID, expectedCartItems);
 
         // When
         MvcResult result = mockMvc.perform(
@@ -131,21 +130,8 @@ public class ShoppingCartControllerTest {
         ShoppingCartDto actual = objectMapper.readValue
                 (result.getResponse().getContentAsString(), ShoppingCartDto.class);
 
-        assertNotNull(actual);
-        assertEquals(expected.userId(), actual.userId());
-        assertFalse(actual.cartItems().isEmpty());
-
-        for (CartItemDto expectedItem : expected.cartItems()) {
-            CartItemDto actualItem = actual.cartItems().stream()
-                    .filter(item -> item.bookId().equals(expectedItem.bookId()))
-                    .findFirst()
-                    .orElseThrow(() -> new AssertionError("Item with bookId " +
-                            expectedItem.bookId() + " was not found in the cart"));
-
-            assertEquals(expectedItem.bookId(), actualItem.bookId());
-            assertEquals(expectedItem.bookTitle(), actualItem.bookTitle());
-            assertEquals(expectedItem.quantity(), actualItem.quantity());
-        }
+        assertThat(actual.userId()).isEqualTo(expected.userId());
+        assertThat(actual.cartItems()).containsExactlyInAnyOrderElementsOf(expected.cartItems());
     }
 
     @Test
@@ -153,7 +139,7 @@ public class ShoppingCartControllerTest {
     @DisplayName("""
             Remove Cart Item
             """)
-    public void removeCartItem_ValidUserAndCartItemId_ReturnsUpdatedShoppingCartDto()
+    void removeCartItem_ValidUserAndCartItemId_ReturnsUpdatedShoppingCartDto()
             throws Exception {
         MvcResult result = mockMvc.perform(
                         delete("/api/cart/cart-items/{cartItemId}", CART_ITEM_ID)
@@ -168,40 +154,23 @@ public class ShoppingCartControllerTest {
     @DisplayName("""
             Get Shopping Cart
             """)
-    public void getShoppingCart_ValidUser_ReturnsShoppingCartDto() throws Exception {
+    void getShoppingCart_ValidUser_ReturnsShoppingCartDto() throws Exception {
         // Given
-        User user = new User();
-        user.setId(USER_ID);
+        User user = createUser(USER_ID);
 
-        Book book = new Book();
-        book.setId(BOOK_ID);
-        book.setTitle(BOOK_TITLE);
+        Book book = createBook(BOOK_ID, BOOK_TITLE);
 
-        ShoppingCart shoppingCart = new ShoppingCart();
-        shoppingCart.setId(SHOPPING_CART_ID);
-        shoppingCart.setUser(user);
+        ShoppingCart shoppingCart = createShoppingCart(SHOPPING_CART_ID, user, Set.of());
 
-        CartItem cartItem = new CartItem();
-        cartItem.setId(CART_ITEM_ID);
-        cartItem.setShoppingCart(shoppingCart);
-        cartItem.setBook(book);
-        cartItem.setQuantity(QUANTITY);
+        CartItem cartItem = createCartItem(CART_ITEM_ID, shoppingCart, book, QUANTITY);
         shoppingCart.setCartItems(Set.of(cartItem));
 
-        CartItemDto cartItemDto = new CartItemDto(
-                cartItem.getId(),
-                cartItem.getBook().getId(),
-                cartItem.getBook().getTitle(),
-                cartItem.getQuantity()
-        );
+        CartItemDto cartItemDto = createCartItemDto(CART_ITEM_DTO_ID, BOOK_ID, BOOK_TITLE, QUANTITY);
 
         Set<CartItemDto> cartItemDtos = Set.of(cartItemDto);
 
-        ShoppingCartDto expected = new ShoppingCartDto(
-                SHOPPING_CART_ID,
-                USER_ID,
-                cartItemDtos
-        );
+        ShoppingCartDto expected
+                = createShoppingCartDto(SHOPPING_CART_DTO_ID, USER_ID, cartItemDtos);
 
         // When
         MvcResult result = mockMvc.perform(
@@ -216,5 +185,51 @@ public class ShoppingCartControllerTest {
                 (result.getResponse().getContentAsString(), ShoppingCartDto.class);
 
         EqualsBuilder.reflectionEquals(expected, actual, "id");
+    }
+
+    private User createUser(Long userId) {
+        User user = new User();
+        user.setId(userId);
+        return user;
+    }
+
+    private Book createBook(Long bookId, String title) {
+        Book book = new Book();
+        book.setId(bookId);
+        book.setTitle(title);
+        return book;
+    }
+
+    private CartItem createCartItem(
+            Long cartItemId, ShoppingCart shoppingCart,
+            Book book, int quantity) {
+        CartItem cartItem = new CartItem();
+        cartItem.setId(cartItemId);
+        cartItem.setShoppingCart(shoppingCart);
+        cartItem.setBook(book);
+        cartItem.setQuantity(quantity);
+        return cartItem;
+    }
+
+    private ShoppingCart createShoppingCart(
+            Long shoppingCartId, User user,
+            Set<CartItem> cartItems) {
+        ShoppingCart shoppingCart = new ShoppingCart();
+        shoppingCart.setId(shoppingCartId);
+        shoppingCart.setUser(user);
+        shoppingCart.setCartItems(cartItems);
+        return shoppingCart;
+    }
+
+    private CartItemDto createCartItemDto(
+            Long cartItemDtoId, Long bookId,
+            String bookTitle, int quantity) {
+        return new CartItemDto(cartItemDtoId, bookId, bookTitle, quantity);
+    }
+
+    private ShoppingCartDto createShoppingCartDto(
+            Long shoppingCartDtoId, Long userId,
+            Set<CartItemDto> cartItems) {
+        return new ShoppingCartDto(shoppingCartDtoId, userId, cartItems);
     }
 }

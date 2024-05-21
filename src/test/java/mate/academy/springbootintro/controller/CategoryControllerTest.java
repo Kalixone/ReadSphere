@@ -7,28 +7,24 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.sql.DataSource;
-import lombok.SneakyThrows;
 import mate.academy.springbootintro.dto.CategoryDto;
 import mate.academy.springbootintro.dto.CreateCategoryRequestDto;
 import mate.academy.springbootintro.model.Category;
 import mate.academy.springbootintro.repository.category.CategoryRepository;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,50 +48,22 @@ public class CategoryControllerTest {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    @BeforeEach
-    void beforeEach(
+    @BeforeAll
+    static void beforeAll(
             @Autowired DataSource dataSource,
             @Autowired WebApplicationContext webApplicationContext) throws SQLException {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
                 .build();
-        teardown(dataSource);
-        try (Connection connection = dataSource.getConnection()) {
-            connection.setAutoCommit(true);
-            ScriptUtils.executeSqlScript(
-                    connection,
-                    new ClassPathResource("database/categories/" +
-                            "add-2-categories-to-categories-table.sql")
-            );
         }
-    }
-
-    @AfterAll
-    static void afterAll(
-            @Autowired DataSource dataSource
-    ) {
-        teardown(dataSource);
-    }
-
-    @SneakyThrows
-    static void teardown(DataSource dataSource) {
-        try (Connection connection = dataSource.getConnection()) {
-            connection.setAutoCommit(true);
-            ScriptUtils.executeSqlScript(
-                    connection,
-                    new ClassPathResource("database/categories/" +
-                            "delete-categories-from-categories-table.sql")
-            );
-        }
-    }
 
     @Test
     @WithMockUser(username = "piotrek", authorities = {"ADMIN"})
     @DisplayName("""
             Create a new category
             """)
-    public void createCategory_ValidRequest_CreatesNewCategory() throws Exception {
+    void createCategory_ValidRequest_CreatesNewCategory() throws Exception {
         // Given
         CreateCategoryRequestDto requestDto = new CreateCategoryRequestDto(
                 CATEGORY_NAME_1,
@@ -127,7 +95,12 @@ public class CategoryControllerTest {
     @DisplayName("""
             Get all categories
             """)
-    public void getAll_Categories_ReturnsAllCategories() throws Exception {
+    @Sql(scripts = {
+            "classpath:database/categories/delete-categories-from-categories-table.sql",
+            "classpath:database/categories/add-2-categories-to-categories-table.sql"
+    },
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    void getAll_Categories_ReturnsAllCategories() throws Exception {
         // Given
         CategoryDto category1 = createCategoryDto(
                 CATEGORY_ID_1, CATEGORY_NAME_1, CATEGORY_DESCRIPTION_1);
@@ -159,7 +132,9 @@ public class CategoryControllerTest {
     @DisplayName("""
             Get category by ID
             """)
-    public void getCategoryById_ValidId_ReturnsCategoryDto() throws Exception {
+    @Sql(scripts = "classpath:database/categories/add-2-categories-to-categories-table.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    void getCategoryById_ValidId_ReturnsCategoryDto() throws Exception {
         // Given
         CategoryDto expected = createCategoryDto(
                 CATEGORY_ID_1, CATEGORY_NAME_1, CATEGORY_DESCRIPTION_1);
@@ -182,7 +157,9 @@ public class CategoryControllerTest {
     @DisplayName("""
             Delete category by ID
             """)
-    public void deleteCategory_ValidId_DeletesCategory() throws Exception {
+    @Sql(scripts = "classpath:database/categories/delete-categories-from-categories-table.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void deleteCategory_ValidId_DeletesCategory() throws Exception {
         // Given
         categoryRepository.findById(CATEGORY_ID_1);
 
