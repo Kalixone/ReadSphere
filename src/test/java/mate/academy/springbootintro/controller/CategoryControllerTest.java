@@ -17,7 +17,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,6 +27,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,13 +59,31 @@ public class CategoryControllerTest {
                 .webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
                 .build();
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(true);
+            ScriptUtils.executeSqlScript(
+                    connection,
+                    new ClassPathResource("database/categories/" +
+                            "delete-categories-from-categories-table.sql")
+            );
+            ScriptUtils.executeSqlScript(
+                    connection,
+                    new ClassPathResource("database/categories/" +
+                            "add-2-categories-to-categories-table.sql")
+            );
         }
+    }
 
     @Test
     @WithMockUser(username = "piotrek", authorities = {"ADMIN"})
     @DisplayName("""
             Create a new category
             """)
+    @Sql(scripts = {
+            "classpath:database/categories/delete-categories-from-categories-table.sql",
+            "classpath:database/categories/add-2-categories-to-categories-table.sql"
+    },
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void createCategory_ValidRequest_CreatesNewCategory() throws Exception {
         // Given
         CreateCategoryRequestDto requestDto = new CreateCategoryRequestDto(
@@ -95,11 +116,6 @@ public class CategoryControllerTest {
     @DisplayName("""
             Get all categories
             """)
-    @Sql(scripts = {
-            "classpath:database/categories/delete-categories-from-categories-table.sql",
-            "classpath:database/categories/add-2-categories-to-categories-table.sql"
-    },
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     void getAll_Categories_ReturnsAllCategories() throws Exception {
         // Given
         CategoryDto category1 = createCategoryDto(
@@ -132,8 +148,6 @@ public class CategoryControllerTest {
     @DisplayName("""
             Get category by ID
             """)
-    @Sql(scripts = "classpath:database/categories/add-2-categories-to-categories-table.sql",
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     void getCategoryById_ValidId_ReturnsCategoryDto() throws Exception {
         // Given
         CategoryDto expected = createCategoryDto(

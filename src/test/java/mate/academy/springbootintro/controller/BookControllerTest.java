@@ -79,6 +79,13 @@ public class BookControllerTest {
                 .apply(springSecurity())
                 .build();
         teardown(dataSource);
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(true);
+            ScriptUtils.executeSqlScript(
+                    connection,
+                    new ClassPathResource("database/books/add-3-books-to-books-table.sql")
+            );
+        }
     }
 
     @AfterAll
@@ -114,6 +121,13 @@ public class BookControllerTest {
     @DisplayName("""
             Create a new book
             """)
+    @Sql(scripts = {
+            "classpath:database/books_categories/" +
+                    "delete-book_id-and_category_id-from-books_categories-table.sql",
+            "classpath:database/books/delete-books-from-books-table.sql",
+            "classpath:database/books/add-3-books-to-books-table.sql"
+    },
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void createBook_ValidRequestDto_CreatesNewBook() throws Exception {
         // Given
         Category category = createCategory(
@@ -165,13 +179,6 @@ public class BookControllerTest {
     @DisplayName("""
             Get all books
             """)
-    @Sql(scripts = {
-            "classpath:database/books_categories/" +
-                    "delete-book_id-and_category_id-from-books_categories-table.sql",
-            "classpath:database/books/delete-books-from-books-table.sql",
-            "classpath:database/books/add-3-books-to-books-table.sql"
-    },
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     void getAll_ValidRequest_ReturnsAllBooks() throws Exception {
         // Given
         List<BookDto> expected = prepareExpectedBooks();
@@ -231,6 +238,11 @@ public class BookControllerTest {
     @DisplayName("""
             Delete book by ID
             """)
+    @Sql(scripts = {
+            "classpath:database/books/delete-books-from-books-table.sql",
+            "classpath:database/books/add-3-books-to-books-table.sql"
+    },
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void deleteBookById_ValidId_DeletesBook() throws Exception {
         // Given
         bookRepository.findById(BOOK_ID_3);
@@ -252,8 +264,6 @@ public class BookControllerTest {
     @DisplayName("""
             Search books with valid query parameters
             """)
-    @Sql(scripts = "classpath:database/books/add-3-books-to-books-table.sql",
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     void searchBooksByParameters_ValidQuery_ReturnsExpectedResults() throws Exception {
         // Given
         List<BookDto> expected = new ArrayList<>();
