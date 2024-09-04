@@ -1,8 +1,8 @@
-# 📚 Overview of BookStore Online
+# 📚 Overview of ReadSphere
 
-Welcome to the documentation of the "Bookstore Online" project based on Java Spring.
+Welcome to the documentation of the "ReadSphere" project based on Java Spring.
 
-The Online Book Store API is a Java-based RESTful interface designed for managing generic online bookstores. It offers a comprehensive set of endpoints essential for building a fully functional online bookshop.
+The ReadSphere API is a Java-based RESTful interface designed for managing generic online bookstores. It offers a comprehensive set of endpoints essential for building a fully functional online bookshop.
 
 With this API, you have access to a wide range of operations, including:
 
@@ -92,7 +92,7 @@ Password: 123123123
 
 ## 📊 Entity Structure and Relations Diagram
 
-Below is the entity structure and relations diagram for the "Bookstore Online" project, illustrating connections between various entities and their fields.
+Below is the entity structure and relations diagram for the "ReadSphere" project, illustrating connections between various entities and their fields.
 
 ![Entity Structure and Relations Diagram](https://i.imgur.com/mJkDjrW.png)
 
@@ -232,7 +232,7 @@ Below is the entity structure and relations diagram for the "Bookstore Online" p
 
 ## 📸 Screenshots
 
-Here, you'll discover screenshots illustrating the functionality of select sample endpoints from the "Bookstore Online" project. Please bear in mind that these are just a few instances, with a comprehensive video showcasing all available endpoints awaiting you further below.
+Here, you'll discover screenshots illustrating the functionality of select sample endpoints from the "ReadSphere" project. Please bear in mind that these are just a few instances, with a comprehensive video showcasing all available endpoints awaiting you further below.
 
 ### User Registration:
 ![User Registration](https://i.imgur.com/yHYP8Lu.png)
@@ -262,13 +262,13 @@ Here, you'll discover screenshots illustrating the functionality of select sampl
 
 ## 🎥 Video Presentation of Endpoint Functionality
 
-Watch the video below to learn about all the available endpoints in "Bookstore Online" application and see how they work in action:
+Watch the video below to learn about all the available endpoints in "ReadSphere" application and see how they work in action:
 
 [![Click to watch video](https://cdn.loom.com/sessions/thumbnails/e524e2cf15a64907b7b51b5ed4c0ad5a-with-play.gif)](https://www.loom.com/share/e524e2cf15a64907b7b51b5ed4c0ad5a?sid=99be2c6f-c91e-4e95-939d-1787f372d1e5)
 
 ### Description:
 
-In this video, I showcase all the available endpoints in our "Bookstore Online" application and explain how they work and what they're used for. You'll see how to register new users, log in, add and update books and categories, manage the shopping cart, place orders, and much more!
+In this video, I showcase all the available endpoints in our "ReadSphere" application and explain how they work and what they're used for. You'll see how to register new users, log in, add and update books and categories, manage the shopping cart, place orders, and much more!
 
 ## 🛠 Challenges Faced During Project Development
 
